@@ -19,7 +19,7 @@ function MainBody() {
     return (
         <main className={styles['container']}>
             <div className={styles['wrapper']}>
-                <h2>크리에이터를 위한 교육용 클래스 회의</h2>
+                <h2>크리에이터를 위한 교육용 클래스! </h2>
                 <h3>Edu Meet으로 지금, 실시간 라이브 스트리밍 교육을 즐겨보세요!</h3>
                 <div className={styles['stream']}>
                     {/* start streaming */}
