@@ -1,0 +1,137 @@
+@font-face {
+    /* 사용할 폰트의 이름 */
+    font-family: "AppleSDGothicNeo";
+    font-display: fallback;
+  
+    src: url("./AppleSDGothicNeoH.woff") format("woff");
+  
+    /* 사용할 폰트의 기본 스타일 */
+    font-weight: 900;
+    font-style: normal;
+}
+
+@font-face {
+    /* 사용할 폰트의 이름 */
+    font-family: "AppleSDGothicNeo";
+    font-display: fallback;
+  
+    src: url("./AppleSDGothicNeoEB.woff") format("woff");
+  
+    /* 사용할 폰트의 기본 스타일 */
+    font-weight: 800;
+    font-style: normal;
+}
+
+
+@font-face {
+    /* 사용할 폰트의 이름 */
+    font-family: "AppleSDGothicNeo";
+    font-display: fallback;
+  
+    src: url("./AppleSDGothicNeoB.woff") format("woff");
+  
+    /* 사용할 폰트의 기본 스타일 */
+    font-weight: 700;
+    font-style: normal;
+}
+
+
+@font-face {
+    /* 사용할 폰트의 이름 */
+    font-family: "AppleSDGothicNeo";
+    font-display: fallback;
+  
+    src: url("./AppleSDGothicNeoSB.woff") format("woff");
+  
+    /* 사용할 폰트의 기본 스타일 */
+    font-weight: 600;
+    font-style: normal;
+}
+
+
+@font-face {
+    /* 사용할 폰트의 이름 */
+    font-family: "AppleSDGothicNeo";
+    font-display: fallback;
+  
+    src: url("./AppleSDGothicNeoM.woff") format("woff");
+  
+    /* 사용할 폰트의 기본 스타일 */
+    font-weight: 500;
+    font-style: normal;
+}
+
+@font-face {
+    /* 사용할 폰트의 이름 */
+    font-family: "AppleSDGothicNeo";
+    font-display: fallback;
+  
+    src: url("./AppleSDGothicNeoR.woff") format("woff");
+  
+    /* 사용할 폰트의 기본 스타일 */
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    /* 사용할 폰트의 이름 */
+    font-family: "AppleSDGothicNeo";
+    font-display: fallback;
+  
+    src: url("./AppleSDGothicNeoL.woff") format("woff");
+  
+    /* 사용할 폰트의 기본 스타일 */
+    font-weight: 300;
+    font-style: normal;
+}
+
+@font-face {
+    /* 사용할 폰트의 이름 */
+    font-family: "AppleSDGothicNeo";
+    font-display: fallback;
+  
+    src: url("./AppleSDGothicNeoUL.woff") format("woff");
+  
+    /* 사용할 폰트의 기본 스타일 */
+    font-weight: 200;
+    font-style: normal;
+}
+
+@font-face {
+    /* 사용할 폰트의 이름 */
+    font-family: "AppleSDGothicNeo";
+    font-display: fallback;
+  
+    src: url("./AppleSDGothicNeoT.woff") format("woff");
+  
+    /* 사용할 폰트의 기본 스타일 */
+    font-weight: 100;
+    font-style: normal;
+}
+
+
+
+@font-face {
+    /* 사용할 폰트의 이름 */
+    font-family: "NotoSansKR";
+    font-display: fallback;
+  
+    src: url("./NotoSansKR-Regular.woff") format("woff");
+  
+    /* 사용할 폰트의 기본 스타일 */
+    font-weight: 400;
+    font-style: normal;
+}
+
+
+@font-face {
+    /* 사용할 폰트의 이름 */
+    font-family: "맑은고딕";
+    font-display: fallback;
+  
+    src: url("./맑은고딕.woff") format("woff");
+  
+    /* 사용할 폰트의 기본 스타일 */
+    font-weight: 400;
+    font-style: normal;
+}
