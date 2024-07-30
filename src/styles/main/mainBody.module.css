@@ -123,6 +123,14 @@
     flex-direction: column;
   }
 
+  .wrapper > h2 {
+    font-size: 36px;
+  }
+
+  .wrapper > h3 {
+    font-size: 28px;
+  }
+
   .stream {
     display: flex;
     flex-direction: column;
@@ -136,5 +144,47 @@
 
   .type {
     margin: 0 0 30px 0;
+  }
+}
+
+@media all and (max-width: 540px) {
+  .wrapper > h2 {
+    font-size: 32px;
+  }
+
+  .wrapper > h3 {
+    font-size: 24px;
+  }
+
+  .start {
+    width: 180px;
+  }
+
+  .start > svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .start > p {
+    font-size: 16px;
+  }
+
+  .type {
+    padding: 20px 15px;
+    width: 235px;
+    height: 65px;
+  }
+  
+  .type > svg {
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    min-height: 24px;
+  }
+
+
+
+  .join > h2 {
+    font-size: 18px;
   }
 }
