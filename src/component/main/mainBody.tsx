@@ -4,7 +4,7 @@ import styles from '@/styles/main/mainBody.module.css';
 
 function MainBody() {
 
-    const [code, setCode] = useState('');
+    const [code, setCode] = useState<string>('');
 
     const onCode = (e: React.ChangeEvent<HTMLInputElement>) => {
         // do not allow space and allow english only
