@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 //component
 import Toolbar from "@/component/toolbar/toolbar";
+import Footer from "@/component/footer/footer";
 
 // global style
 import "@/styles/globals.css";
@@ -21,6 +22,7 @@ export default function RootLayout({
       <body>
         <Toolbar />
         {children}
+        <Footer />
       </body>
     </html>
   );
