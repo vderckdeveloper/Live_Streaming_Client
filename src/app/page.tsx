@@ -2,7 +2,7 @@
 import MainBody from '@/component/main/mainBody';
 import MainSlide from '@/component/main/mainSlide';
 
-export default function Home() {
+export default function HomePage() {
   return (
     <>
       <MainBody />
