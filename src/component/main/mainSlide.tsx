@@ -85,7 +85,7 @@ function MainSlide() {
                     </article>
                     {/* swiper */}
                     <Swiper
-                        slidesPerView={5}
+                        slidesPerView={1}
                         spaceBetween={30}
                         autoplay={{
                             delay: 2000,
