@@ -4,6 +4,7 @@
     justify-content: center;
     align-items: center;
     height: 80px;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.8);
 }
 
 .wrapper {
@@ -11,13 +12,95 @@
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    width: 90%;
+    width: 80%;
 }
 
+/* setting bar */
 .setting-bar {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
     width: 100%;
+}
+
+/* left-setting-bar */
+.left-setting-bar {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    flex-basis: 33.33%;
+}
+
+.left-setting-bar > h2 {
+    margin-right: 8px;
+}
+
+.left-setting-bar > span {
+    margin-right: 8px;
+}
+
+.left-setting-bar > p {
+    font-weight: 500;
+    font-size: 20px;
+}
+
+/* middle-setting-bar */
+.middle-setting-bar {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    flex-basis: 33.33%;
+}
+
+/* right setting bar */
+.right-setting-bar {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    flex-basis: 33.33%;
+}
+
+/* svg box */
+.svg-box {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    border-radius: 50%;
+    background-color: rgb(117, 188, 250);
+    transition: 0.4s;
+    cursor: pointer;
+}
+
+.svg-box:not(:last-child) {
+    margin-right: 8px;
+}
+ 
+.svg-box > svg {
+    min-width: 24px;
+    min-height: 24px;
+}
+
+.svg-box:hover {
+    background-color: rgb(170, 209, 243);
+}
+
+@media all and (max-width: 1024px) {
+    .left-setting-bar {
+        display: none;
+    }
+
+    .middle-setting-bar {
+        flex-basis: 100%;
+    }
+
+    .right-setting-bar {
+        display: none;
+    }
 }
