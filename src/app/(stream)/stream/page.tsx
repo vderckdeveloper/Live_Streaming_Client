@@ -1,7 +1,12 @@
+// components
+import Stream from "@/component/stream/stream";
+import Setting from "@/component/stream/setting";
+
 export default function StreamPage() {
   return (
     <>
-      <p>비디오</p>
+      <Stream />
+      <Setting />
     </>
   );
 }
