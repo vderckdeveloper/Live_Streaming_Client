@@ -35,10 +35,14 @@
 
 .left-setting-bar > h2 {
     margin-right: 8px;
+    font-weight: 500;
+    font-size: 20px;
 }
 
 .left-setting-bar > span {
     margin-right: 8px;
+    font-weight: 500;
+    font-size: 20px;
 }
 
 .left-setting-bar > p {
@@ -102,5 +106,25 @@
 
     .right-setting-bar {
         display: none;
+    }
+}
+
+@media all and (max-width: 400px) {
+    .wrapper {
+        width: 90%;
+    }
+
+    .middle-setting-bar {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+        align-items: center;
+    }
+
+    .svg-box > svg {
+        width: 20px;
+        height: 20px;
+        min-width: 20px;
+        min-height: 20px;
     }
 }
