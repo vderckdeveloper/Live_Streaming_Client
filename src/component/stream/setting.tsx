@@ -29,6 +29,8 @@ function Setting() {
         };
     }, []);
 
+    if(!browserWidth) return;
+
     return (
         <section className={styles['container']}>
             <div className={styles['wrapper']}>
