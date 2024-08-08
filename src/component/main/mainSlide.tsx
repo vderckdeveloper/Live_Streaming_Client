@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from 'next/navigation';
 
 // image
 import groupVideoImage from '../../../public/image/main/240730_mainSlide_Image(1)_Ver1.0.png';
@@ -38,6 +39,14 @@ function SlideContent(props: SlideListProps) {
 }
 
 function MainSlide() {
+
+    // router
+    const router = useRouter();
+
+    // start streaming
+    const onStart = () => {
+        router.push('/stream');
+    }
 
     // slide list
     const slideList: SlideListProps[] = [
@@ -129,7 +138,7 @@ function MainSlide() {
                     <div className={styles['text-box']}>
                         <h2>다자간 화상 통화 교육을 위한 최고의 선택!</h2>
                         <p>Edu Meet에서 많은 수의 인원에게 실시간 스트리밍을 시작하세요!</p>
-                        <button>시작하기</button>
+                        <button onClick={onStart}>시작하기</button>
                     </div>
                 </div>
             </div>
