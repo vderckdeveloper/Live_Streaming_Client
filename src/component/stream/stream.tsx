@@ -12,7 +12,7 @@ interface Refs {
 function Stream() {
 
     const [isCurrentScreenOff, setIsCurrentScreenOff] = useState<boolean>(true);
-    const [recordedChunks, setRecordedChunks] = useState([]);
+    const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
 
     const videoRef = useRef<HTMLVideoElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
@@ -24,7 +24,7 @@ function Stream() {
         streamRef,
     }
     // start video
-    const startVideo = async () => {
+    const startVideo = async (): Promise<void> => {
         try {
             // Stop the previous stream if it exists
             if (streamRef.current) {
@@ -46,7 +46,7 @@ function Stream() {
     };
 
     // share my current screen
-    const onShareMyCurrentScreen = async () => {
+    const onShareMyCurrentScreen = async (): Promise<void> => {
         try {
             // Stop the previous stream if it exists
             if (streamRef.current) {
@@ -80,22 +80,67 @@ function Stream() {
     };
 
     // record my screen
-    const onStartRecordingScreen = async () => {
-        // get stream
-        const stream = await navigator.mediaDevices.getDisplayMedia({video: true, audio: true});
+    const onStartRecordingScreen = async (): Promise<void> => {
+        // get video and audio streams
+        const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
         const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-
+    
+        // combine streams
         const combinedStream = new MediaStream([
-          ...stream.getVideoTracks(),
-          ...audioStream.getAudioTracks()
+            ...stream.getVideoTracks(),
+            ...audioStream.getAudioTracks()
         ]);
     
+        // local variable to store chunks
+        let recordedChunks: Blob[] = [];
+    
+        // create media recorder
         const recorder = new MediaRecorder(combinedStream, { mimeType: 'video/webm' });
     
-        // write the code that saves the recorded file 
-        // continue on from here
-      };
+        recorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+                recordedChunks.push(event.data);
+            }
+        };
+    
+        recorder.onstop = () => {
+            const blob = new Blob(recordedChunks, { type: 'video/webm' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'screen-recording.webm';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+    
+            // Optionally clear the local array if needed later
+            recordedChunks = [];
+        };
+    
+        // set the recorder to state if needed
+        setMediaRecorder(recorder);
+    
+        // start recording
+        recorder.start();
+    
+        // store the stream reference for stopping later
+        if (screenRecordingRef.current) {
+            screenRecordingRef.current = stream;
+        }
+    };
+
+    // stop recording screen
+    const onStopRecordingScreen = (): void => {
+        if (mediaRecorder) {
+            // stop recording
+            mediaRecorder.stop();
+            if (screenRecordingRef.current) {
+                screenRecordingRef.current.getTracks().forEach(track => track.stop());
+                screenRecordingRef.current = null;
+            }
+        }
+    };
 
     // start video first
     useEffect(() => {
@@ -105,7 +150,13 @@ function Stream() {
     return (
         <>
             <Screen refs={refs} />
-            <Setting isCurrentScreenOff={isCurrentScreenOff} onShareMyCurrentScreen={onShareMyCurrentScreen} refs={refs} />
+            <Setting
+                isCurrentScreenOff={isCurrentScreenOff}
+                onShareMyCurrentScreen={onShareMyCurrentScreen}
+                onStartRecordingScreen={onStartRecordingScreen}
+                onStopRecordingScreen={onStopRecordingScreen}
+                refs={refs}
+            />
         </>
     )
 }
