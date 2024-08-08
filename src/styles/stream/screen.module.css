@@ -1,0 +1,151 @@
+.container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 0;
+    width: 100%;
+    height: calc(100dvh - 80px);
+}
+
+.wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    width: 80%;
+    max-width: 1440px;
+}
+
+/*on screen */
+.on-screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex-basis: calc(50% - 20px);
+    margin: 0 auto;
+    max-height: 500px;
+}
+
+.video-box {
+    width: 100%;
+    height: 100%;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.video-box > video {
+    display: block;
+    width: 100%;
+    height: 22vw;
+    object-fit: cover;
+}
+
+.video-text {
+    margin-top: 30px;
+    font-weight: 600;
+    font-size: 24px;
+}
+
+/* off screen */
+.off-screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex-basis: calc(50% - 20px);
+    margin: 0 auto;
+    max-height: 500px;
+}
+
+.svg-box {
+    width: 100%;
+    height: 100%;
+    border-radius: 6px;
+    overflow: hidden;
+    background-color: #000000;
+}
+
+.svg-box > div {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 22vw;
+    object-fit: cover;
+    background-color: #1a73e8;
+    background: linear-gradient(15deg,#4285f4 50%,#1a73e8 50.1%);
+}
+
+.svg-box > div > svg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 25%;
+    height: 25%;
+    min-width: 40px;
+    min-height: 40px;
+}
+
+.svg-text {
+    margin-top: 30px;
+    font-weight: 600;
+    font-size: 24px;
+}
+
+@media all and (max-width: 1440px) {
+    .wrapper {
+        width: 90%;
+    }
+}
+
+
+ /* height media query */
+@media all and (max-width: 840px), all and (max-height: 880px) {
+    .container {
+        padding: 60px 0 120px 0;
+        height: auto;
+        overflow-y: auto;
+    }
+
+    .wrapper {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 40px 0;
+    }
+
+    .on-screen, .off-screen {
+        flex-basis: 0;
+        width: 100%;
+        min-height: 50vw;
+    }
+
+    .video-box > video {
+        height: 100%;
+    }
+
+    .svg-box > div {
+        height: 100%;
+    }
+}
+
+@media all and (max-width: 640px) {
+    .on-screen, .off-screen {
+        min-height: 350px;
+    }
+}
+
+@media all and (max-width: 540px) {
+    .on-screen, .off-screen {
+        min-height: 320px;
+    }
+}
+
+@media all and (max-width: 480px) {
+    .on-screen, .off-screen {
+        min-height: 300px;
+    }
+}
