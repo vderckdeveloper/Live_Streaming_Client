@@ -98,6 +98,74 @@
     background-color: rgb(149, 205, 255);
 }
 
+/* off svg box */
+.off-svg-box {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    border-radius: 50%;
+    background-color: rgb(234, 67, 53);
+    transition: 0.4s;
+    cursor: pointer;
+}
+
+.off-svg-box:not(:last-child) {
+    margin-right: 8px;
+}
+ 
+.off-svg-box > svg {
+    min-width: 24px;
+    min-height: 24px;
+}
+
+/* screen off svg box */
+.screen-off-svg-box {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    border-radius: 50%;
+    background-color: rgb(79, 186, 7);
+    transition: 0.4s;
+    cursor: pointer;
+}
+
+.screen-off-svg-box:not(:last-child) {
+    margin-right: 8px;
+}
+ 
+.screen-off-svg-box > svg {
+    min-width: 24px;
+    min-height: 24px;
+}
+
+/* screen record svg box */
+.screen-record-svg-box {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    border-radius: 50%;
+    background: linear-gradient(60deg, #e74c3c, #f39c12, #b075c9, #3498db, #5073b8, #1098ad, #07b39b, #6fba82);
+    background-size: 400% 400%;
+    transition: 0.4s;
+    cursor: pointer;
+    animation: gradient-animation 2s ease infinite;
+}
+
+.screen-record-svg-box {
+    margin-right: 8px;
+}
+
+.screen-record-svg-box > svg {
+    min-width: 24px;
+    min-height: 24px;
+}
+
 @media all and (max-width: 1024px) {
     .left-setting-bar {
         display: none;
@@ -134,10 +202,22 @@
         align-items: center;
     }
 
-    .svg-box > svg {
+    .svg-box > svg, .off-svg-box > svg, .screen-off-svg-box > svg, .screen-record-svg-box > svg {
         width: 20px;
         height: 20px;
         min-width: 20px;
         min-height: 20px;
+    }
+}
+
+@keyframes gradient-animation {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
     }
 }
