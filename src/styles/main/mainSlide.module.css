@@ -9,7 +9,7 @@
 .wrapper {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: space-around;
     align-items: center;
     width: 80%;
 }
@@ -21,13 +21,13 @@
     justify-content: center;
     align-items: center;
     margin-right: 50px;
-    width: 100%;
+    width: 50%;
 }
 
 /* mainslide */
 .main-slide {
     margin: 0;
-    max-width: 400px;
+    max-width: 600px;
 }
 
 /* image box */
@@ -80,7 +80,7 @@
 
 /* text box */
 .text-frame {
-    max-width: 400px;
+    width: 50%;
 }
 
 .text-box {
@@ -147,6 +147,7 @@
 
     .slide-frame {
         margin: 0 0 60px 0;
+        width: 100%;
     }
 
     .main-slide {
@@ -155,6 +156,7 @@
 
     .text-frame {
         margin-bottom: 30px;
+        width: 100%;
         max-width: 500px;
     }
 }
