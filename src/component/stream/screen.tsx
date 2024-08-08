@@ -1,22 +1,20 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, RefObject, MutableRefObject } from 'react';
 import styles from '@/styles/stream/screen.module.css';
 
-function Screen() {
+interface Refs {
+    videoRef: React.RefObject<HTMLVideoElement>;
+    streamRef: React.MutableRefObject<MediaStream | null>;
+}
+
+interface ScreenProps {
+    refs: Refs;
+}
+
+const Screen = ({ refs }: ScreenProps) => {
+
+    const { videoRef } = refs;
 
     const [screenNum, setScreenNum] = useState<number>(1);
-    const videoRef = useRef<HTMLVideoElement>(null);
-
-    useEffect(() => {
-        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-            .then(stream => {
-                if (videoRef.current) {
-                    videoRef.current.srcObject = stream;
-                }
-            })
-            .catch(error => {
-                console.error('Error accessing media devices.', error);
-            });
-    }, []);
 
     return (
         <section className={styles['container']}>
@@ -52,7 +50,7 @@ function Screen() {
                             </svg>
                         </div>
                     </div>
-                    <h2 className={styles['svg-text']}>참여자1 화면</h2>
+                    <h2 className={styles['svg-text']}>참여자2 화면</h2>
                 </div>
                 {/* other screen */}
                 <div className={styles['off-screen']}>
@@ -65,7 +63,7 @@ function Screen() {
                             </svg>
                         </div>
                     </div>
-                    <h2 className={styles['svg-text']}>참여자1 화면</h2>
+                    <h2 className={styles['svg-text']}>참여자3 화면</h2>
                 </div>
             </div>
         </section>
