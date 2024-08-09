@@ -3,6 +3,9 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from '@/styles/main/mainBody.module.css';
 
+// utility
+import { generateRandomString } from '../../../utils/utility';
+
 function MainBody() {
 
     const [code, setCode] = useState<string>('');
@@ -17,7 +20,8 @@ function MainBody() {
 
     // start streaming
     const onStart = () => {
-        router.push('/stream');
+        const joinCode = generateRandomString();
+        router.push(`/stream/${joinCode}`);
     }
     
     // join streaming

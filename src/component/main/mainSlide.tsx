@@ -2,6 +2,9 @@
 import { useState } from "react";
 import { useRouter } from 'next/navigation';
 
+// utility
+import { generateRandomString } from "../../../utils/utility";
+
 // image
 import groupVideoImage from '../../../public/image/main/240730_mainSlide_Image(1)_Ver1.0.png';
 import recordVideoImage from '../../../public/image/main/240730_mainSlide_Image(2)_Ver1.0.png';
@@ -45,7 +48,8 @@ function MainSlide() {
 
     // start streaming
     const onStart = () => {
-        router.push('/stream');
+        const joinCode = generateRandomString();
+        router.push(`/stream/${joinCode}`);
     }
 
     // slide list
