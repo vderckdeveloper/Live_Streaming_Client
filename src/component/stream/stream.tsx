@@ -9,10 +9,17 @@ interface Refs {
     streamRef: React.MutableRefObject<MediaStream | null>;
 }
 
+interface ScreenRecordingError {
+    name: 'NotAllowedError' | 'NotFoundError' | 'SecurityError' | 'AbortError' | 'NotReadableError' | 'OverconstrainedError' | 'TypeError' | string;
+    message?: string;
+};
+
 function Stream() {
 
     const [isCurrentScreenOff, setIsCurrentScreenOff] = useState<boolean>(true);
+    const [isScreenRecordingOff, setIsScreenRecordingOff] = useState<boolean>(true);
     const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+
 
     const videoRef = useRef<HTMLVideoElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
@@ -64,6 +71,7 @@ function Stream() {
 
             if (videoRef.current) {
                 videoRef.current.srcObject = combinedStream;
+                // current screen on
                 setIsCurrentScreenOff(false);
             }
 
@@ -74,59 +82,84 @@ function Stream() {
             screenStream.getVideoTracks()[0].addEventListener('ended', () => {
                 startVideo();
             });
-        } catch (err) {
-            console.error("Error sharing the screen: ", err);
+        } catch (error: unknown) {
+            const recordingError = error as ScreenRecordingError;
+            if (recordingError.name === 'NotAllowedError' || recordingError.name === 'NotFoundError') {
+                // current screen off 
+                setIsCurrentScreenOff(true);
+
+                // start video
+                startVideo();
+
+
+                console.error(error);
+            } else {
+                console.error("Error starting screen recording: ", error);
+            }
         }
     };
 
     // record my screen
     const onStartRecordingScreen = async (): Promise<void> => {
-        // get video and audio streams
-        const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
-        const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    
-        // combine streams
-        const combinedStream = new MediaStream([
-            ...stream.getVideoTracks(),
-            ...audioStream.getAudioTracks()
-        ]);
-    
-        // local variable to store chunks
-        let recordedChunks: Blob[] = [];
-    
-        // create media recorder
-        const recorder = new MediaRecorder(combinedStream, { mimeType: 'video/webm' });
-    
-        recorder.ondataavailable = (event) => {
-            if (event.data.size > 0) {
-                recordedChunks.push(event.data);
+        try {
+            // get video and audio streams
+            const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+            const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+            // combine streams
+            const combinedStream = new MediaStream([
+                ...stream.getVideoTracks(),
+                ...audioStream.getAudioTracks()
+            ]);
+
+            // local variable to store chunks
+            let recordedChunks: Blob[] = [];
+
+            // create media recorder
+            const recorder = new MediaRecorder(combinedStream, { mimeType: 'video/webm' });
+
+            recorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    recordedChunks.push(event.data);
+                }
+            };
+
+            recorder.onstop = () => {
+                const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'screen-recording.webm';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+
+                // Optionally clear the local array if needed later
+                recordedChunks = [];
+            };
+
+            // set the recorder to state if needed
+            setMediaRecorder(recorder);
+
+            // recording status
+            setIsScreenRecordingOff(false);
+
+            // start recording
+            recorder.start();
+
+            // store the stream reference for stopping later
+            if (screenRecordingRef.current) {
+                screenRecordingRef.current = stream;
             }
-        };
-    
-        recorder.onstop = () => {
-            const blob = new Blob(recordedChunks, { type: 'video/webm' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            a.download = 'screen-recording.webm';
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-    
-            // Optionally clear the local array if needed later
-            recordedChunks = [];
-        };
-    
-        // set the recorder to state if needed
-        setMediaRecorder(recorder);
-    
-        // start recording
-        recorder.start();
-    
-        // store the stream reference for stopping later
-        if (screenRecordingRef.current) {
-            screenRecordingRef.current = stream;
+        } catch (error: unknown) {
+            const recordingError = error as ScreenRecordingError;
+            if (recordingError.name === 'NotAllowedError' || recordingError.name === 'NotFoundError') {
+                setIsScreenRecordingOff(true);
+                console.error(error);
+            } else {
+                console.error("Error starting screen recording: ", error);
+            }
         }
     };
 
@@ -135,6 +168,10 @@ function Stream() {
         if (mediaRecorder) {
             // stop recording
             mediaRecorder.stop();
+
+            // recording status
+            setIsScreenRecordingOff(true);
+
             if (screenRecordingRef.current) {
                 screenRecordingRef.current.getTracks().forEach(track => track.stop());
                 screenRecordingRef.current = null;
@@ -152,6 +189,7 @@ function Stream() {
             <Screen refs={refs} />
             <Setting
                 isCurrentScreenOff={isCurrentScreenOff}
+                isScreenRecordingOff={isScreenRecordingOff}
                 onShareMyCurrentScreen={onShareMyCurrentScreen}
                 onStartRecordingScreen={onStartRecordingScreen}
                 onStopRecordingScreen={onStopRecordingScreen}
