@@ -16,6 +16,18 @@ interface ScreenRecordingError {
 
 function Stream() {
 
+     // ICE Server
+     const ICE_SERVERS = [
+        {
+            urls: "stun:stun.l.google.com:19302",
+        },
+        {
+            urls: "turn:YOUR_TURN_SERVER_URL",
+            username: "YOUR_USERNAME",
+            credential: "YOUR_CREDENTIAL",
+        },
+    ];
+
     const [isMyWebcamOn, setIsMyWebcamOn] = useState<boolean>(false);
     const [isCurrentScreenOff, setIsCurrentScreenOff] = useState<boolean>(true);
     const [isScreenRecordingOff, setIsScreenRecordingOff] = useState<boolean>(true);
@@ -31,6 +43,7 @@ function Stream() {
         videoRef,
         streamRef,
     }
+
     // start video
     const startVideo = async (): Promise<void> => {
         try {
