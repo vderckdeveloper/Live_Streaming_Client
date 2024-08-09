@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import styles from '@/styles/main/mainBody.module.css';
 
 // utility
-import { generateRandomString } from '../../../utils/utility';
+import { generateJoinCode } from '../../../utils/utility';
 
 function MainBody() {
 
@@ -20,7 +20,7 @@ function MainBody() {
 
     // start streaming
     const onStart = () => {
-        const joinCode = generateRandomString();
+        const joinCode = generateJoinCode();
         router.push(`/stream/${joinCode}`);
     }
     
