@@ -16,6 +16,7 @@ interface ScreenRecordingError {
 
 function Stream() {
 
+    const [isMyWebcamOn, setIsMyWebcamOn] = useState<boolean>(false);
     const [isCurrentScreenOff, setIsCurrentScreenOff] = useState<boolean>(true);
     const [isScreenRecordingOff, setIsScreenRecordingOff] = useState<boolean>(true);
     const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
@@ -42,8 +43,12 @@ function Stream() {
             const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
+                // current status off status
                 setIsCurrentScreenOff(true);
             }
+
+            // webcam on status
+            setIsMyWebcamOn(true);
 
             // reflect webcam streaming to the active stream
             streamRef.current = stream;
@@ -103,12 +108,12 @@ function Stream() {
     const onStartRecordingScreen = async (): Promise<void> => {
         try {
             // get video and audio streams
-            const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+            const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
             const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
             // combine streams
             const combinedStream = new MediaStream([
-                ...stream.getVideoTracks(),
+                ...screenStream.getVideoTracks(),
                 ...audioStream.getAudioTracks()
             ]);
 
@@ -150,7 +155,7 @@ function Stream() {
 
             // store the stream reference for stopping later
             if (screenRecordingRef.current) {
-                screenRecordingRef.current = stream;
+                screenRecordingRef.current = combinedStream;
             }
         } catch (error: unknown) {
             const recordingError = error as ScreenRecordingError;
@@ -186,7 +191,10 @@ function Stream() {
 
     return (
         <>
-            <Screen refs={refs} />
+            <Screen
+                isMyWebcamOn={isMyWebcamOn}
+                refs={refs}
+            />
             <Setting
                 isCurrentScreenOff={isCurrentScreenOff}
                 isScreenRecordingOff={isScreenRecordingOff}
