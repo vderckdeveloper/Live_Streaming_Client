@@ -1,4 +1,4 @@
-import { useState, RefObject, MutableRefObject } from 'react';
+import { useEffect, useRef } from 'react';
 import styles from '@/styles/stream/screen.module.css';
 
 interface Refs {
@@ -8,14 +8,18 @@ interface Refs {
 
 interface ScreenProps {
     isMyWebcamOn: boolean;
+    onStartVideo: () => Promise<void>;
     refs: Refs;
 }
 
-const Screen = ({ isMyWebcamOn, refs }: ScreenProps) => {
+const Screen = ({ isMyWebcamOn, onStartVideo, refs }: ScreenProps) => {
 
     const { videoRef } = refs;
 
-    const [screenNum, setScreenNum] = useState<number>(1);
+    // start video
+    useEffect(() => {
+        onStartVideo(); 
+    }, [onStartVideo]);
 
     return (
         <section className={styles['container']}>
