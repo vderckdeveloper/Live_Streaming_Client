@@ -16,8 +16,8 @@ interface ScreenRecordingError {
 
 function Stream() {
 
-     // ICE Server
-     const ICE_SERVERS = [
+    // ICE Server
+    const ICE_SERVERS = [
         {
             urls: "stun:stun.l.google.com:19302",
         },
@@ -33,8 +33,7 @@ function Stream() {
     const [isScreenRecordingOff, setIsScreenRecordingOff] = useState<boolean>(true);
     const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
 
-
-    const videoRef = useRef<HTMLVideoElement>(null);
+    const videoRef = useRef<HTMLVideoElement>(null); // local video stream
     const streamRef = useRef<MediaStream | null>(null);
     const screenRecordingRef = useRef<MediaStream | null>(null);
 
@@ -45,7 +44,7 @@ function Stream() {
     }
 
     // start video
-    const startVideo = async (): Promise<void> => {
+    const onStartVideo = async (): Promise<void> => {
         try {
             // Stop the previous stream if it exists
             if (streamRef.current) {
@@ -98,7 +97,7 @@ function Stream() {
 
             // restart webcam stream
             screenStream.getVideoTracks()[0].addEventListener('ended', () => {
-                startVideo();
+                onStartVideo();
             });
         } catch (error: unknown) {
             const recordingError = error as ScreenRecordingError;
@@ -107,7 +106,7 @@ function Stream() {
                 setIsCurrentScreenOff(true);
 
                 // start video
-                startVideo();
+                onStartVideo();
 
 
                 console.error(error);
@@ -197,15 +196,11 @@ function Stream() {
         }
     };
 
-    // start video first
-    useEffect(() => {
-        startVideo();
-    }, []);
-
     return (
         <>
             <Screen
                 isMyWebcamOn={isMyWebcamOn}
+                onStartVideo={onStartVideo}
                 refs={refs}
             />
             <Setting
