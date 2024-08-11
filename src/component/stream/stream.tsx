@@ -28,7 +28,7 @@ function Stream() {
         },
     ];
 
-    const [isMyWebcamOn, setIsMyWebcamOn] = useState<boolean>(false);
+    const [isMyWebcamLoading, setIsMyWebcamloading] = useState<boolean>(true);
     const [isCurrentScreenOff, setIsCurrentScreenOff] = useState<boolean>(true);
     const [isScreenRecordingOff, setIsScreenRecordingOff] = useState<boolean>(true);
     const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
@@ -59,8 +59,8 @@ function Stream() {
                 setIsCurrentScreenOff(true);
             }
 
-            // webcam on status
-            setIsMyWebcamOn(true);
+            // webcam loading status
+            setIsMyWebcamloading(false);
 
             // reflect webcam streaming to the active stream
             streamRef.current = stream;
@@ -196,11 +196,15 @@ function Stream() {
         }
     };
 
+    // start video streaming after the component is mounted
+    useEffect(()=>{
+        onStartVideo();
+    }, []);
+
     return (
         <>
             <Screen
-                isMyWebcamOn={isMyWebcamOn}
-                onStartVideo={onStartVideo}
+                isMyWebcamLoading={isMyWebcamLoading}
                 refs={refs}
             />
             <Setting
