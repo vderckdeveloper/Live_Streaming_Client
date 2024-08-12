@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useRouter } from 'next/navigation';
 
 // utility
-import { generateJoinCode } from "../../../utils/utility";
+import { generateRoomCode } from "../../../utils/utility";
 
 // image
 import groupVideoImage from '../../../public/image/main/240730_mainSlide_Image(1)_Ver1.0.png';
@@ -48,8 +48,8 @@ function MainSlide() {
 
     // start streaming
     const onStart = () => {
-        const joinCode = generateJoinCode();
-        router.push(`/stream/${joinCode}`);
+        const roomCode = generateRoomCode();
+        router.push(`/stream/${roomCode}`);
     }
 
     // slide list

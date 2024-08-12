@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import styles from '@/styles/main/mainBody.module.css';
 
 // utility
-import { generateJoinCode } from '../../../utils/utility';
+import { generateRoomCode } from '../../../utils/utility';
 
 function MainBody() {
 
@@ -20,8 +20,8 @@ function MainBody() {
 
     // start streaming
     const onStart = () => {
-        const joinCode = generateJoinCode();
-        router.push(`/stream/${joinCode}`);
+        const roomCode = generateRoomCode();
+        router.push(`/stream/${roomCode}`);
     }
     
     // join streaming
