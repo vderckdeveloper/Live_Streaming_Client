@@ -2,7 +2,7 @@
  * generate random string
  * @returns returns random string combination of 'xxx-xxxx-xxx', 3digits - 4digits - 3digits 
  */
-const generateJoinCode = () => {
+const generateRoomCode = () => {
     const getRandomLetter = () => {
         const alphabet = 'abcdefghijklmnopqrstuvwxyz';
         return alphabet[Math.floor(Math.random() * alphabet.length)];
@@ -20,5 +20,5 @@ const generateJoinCode = () => {
 }
 
 export {
-    generateJoinCode,
+    generateRoomCode,
 }
