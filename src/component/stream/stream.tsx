@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import { io, Socket } from 'socket.io-client';
 
 import Screen from "./screen";
@@ -39,6 +40,9 @@ function Stream() {
         videoRef,
         streamRef,
     }
+
+    // path name
+    const pathName = usePathname();
 
     // start video
     const onStartVideo = async (): Promise<void> => {
@@ -210,6 +214,10 @@ function Stream() {
 
     // signaling server
     useEffect(() => {
+        // room code from the path
+        const roomCode = pathName.split('/')[2];
+        if(!roomCode) return;
+
         // signaling server connection
         webSocketRef.current = io(`${process.env.NEXT_PUBLIC_DIRECT_SOCKET_URL}/websocket/webrtc-signal`, {
             withCredentials: true,
@@ -221,6 +229,30 @@ function Stream() {
 
         webSocketRef.current.on('connect', () => {
             console.log('websocket signaling server Connected!');
+            webSocketRef.current?.emit('register', roomCode);
+        });
+
+        webSocketRef.current.on('candidate', async (candidate) => {
+            if (peerConnection.current) {
+                await peerConnection.current.addIceCandidate(new RTCIceCandidate(candidate));
+            }
+        });
+
+        webSocketRef.current.on('offer', async (offer) => {
+            if (peerConnection.current) {
+                await peerConnection.current.setRemoteDescription(new RTCSessionDescription(offer));
+                const answer = await peerConnection.current.createAnswer();
+                await peerConnection.current.setLocalDescription(answer);
+
+                // send answer
+                webSocketRef.current?.emit('answer', answer);
+            }
+        });
+
+        webSocketRef.current.on('answer', async (answer) => {
+            if (peerConnection.current) {
+                await peerConnection.current.setRemoteDescription(new RTCSessionDescription(answer));
+            }
         });
 
         // Handle connection errors
@@ -286,6 +318,11 @@ function Stream() {
                 if (offer) {
                     await peerConnection.current?.setLocalDescription(offer);
                     console.log('Local description set, ICE gathering should start.');
+
+                    // Send the offer to the signaling server
+                    if (webSocketRef.current) {
+                        webSocketRef.current.emit('offer', offer);
+                    }
                 }
             } catch (error) {
                 console.error('Error during WebRTC setup:', error);
