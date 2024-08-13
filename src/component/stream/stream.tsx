@@ -216,7 +216,7 @@ function Stream() {
     useEffect(() => {
         // room code from the path
         const roomCode = pathName.split('/')[2];
-        if(!roomCode) return;
+        if (!roomCode) return;
 
         // signaling server connection
         webSocketRef.current = io(`${process.env.NEXT_PUBLIC_DIRECT_SOCKET_URL}/websocket/webrtc-signal`, {
@@ -291,8 +291,11 @@ function Stream() {
             }
         };
 
+        // continue on from the code below
         peerConnection.current.ontrack = (event) => {
-            console.log('Remote Stream:', event.streams);
+            if (event.streams && event.streams[0]) {
+                console.log('remote video stream', event.streams[0]);
+            }
         };
 
         // Monitor ICE gathering state
