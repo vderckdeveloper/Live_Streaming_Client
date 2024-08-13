@@ -80,7 +80,7 @@
     align-items: center;
     padding: 10px;
     border-radius: 50%;
-    background-color: rgb(117, 188, 250);
+    background-color: #1a73e8;
     transition: 0.4s;
     cursor: pointer;
 }
