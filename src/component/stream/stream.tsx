@@ -35,6 +35,8 @@ function Stream() {
     const streamRef = useRef<MediaStream | null>(null);
     const screenRecordingRef = useRef<MediaStream | null>(null);
 
+    // remote side ref
+
     // objectify refs
     const refs: Refs = {
         videoRef,
@@ -232,9 +234,15 @@ function Stream() {
             webSocketRef.current?.emit('register', roomCode);
         });
 
+        // Handle incoming ICE candidates from other peers
         webSocketRef.current.on('candidate', async (candidate) => {
-            if (peerConnection.current) {
-                await peerConnection.current.addIceCandidate(new RTCIceCandidate(candidate));
+            try {
+                if (peerConnection.current) {
+                    await peerConnection.current.addIceCandidate(new RTCIceCandidate(candidate));
+                    console.log('Added ICE candidate:', candidate);
+                }
+            } catch (error) {
+                console.error('Error adding received ICE candidate', error);
             }
         });
 
@@ -294,7 +302,7 @@ function Stream() {
         // continue on from the code below
         peerConnection.current.ontrack = (event) => {
             if (event.streams && event.streams[0]) {
-                console.log('remote video stream', event.streams[0]);
+                
             }
         };
 
