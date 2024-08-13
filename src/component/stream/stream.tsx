@@ -8,6 +8,7 @@ import Setting from "./setting";
 
 interface Refs {
     videoRef: React.RefObject<HTMLVideoElement>;
+    peerVideoRef: React.RefObject<HTMLVideoElement>;
     streamRef: React.MutableRefObject<MediaStream | null>;
 }
 
@@ -24,6 +25,9 @@ function Stream() {
     const [isScreenRecordingOff, setIsScreenRecordingOff] = useState<boolean>(true);
     const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
 
+    // peer side
+    const [hasPeerNotJoinedYet, SetHasPeerNotJoinedYet] = useState<boolean>(true);
+
     // web socket ref
     const webSocketRef = useRef<Socket | null>(null);
 
@@ -36,10 +40,12 @@ function Stream() {
     const screenRecordingRef = useRef<MediaStream | null>(null);
 
     // remote side ref
+    const peerVideoRef = useRef<HTMLVideoElement>(null); // peer video stream
 
     // objectify refs
     const refs: Refs = {
         videoRef,
+        peerVideoRef,
         streamRef,
     }
 
@@ -292,6 +298,7 @@ function Stream() {
             iceServers: ICE_SERVERS
         });
 
+        // ice candidate
         peerConnection.current.onicecandidate = (event) => {
             if (event.candidate && webSocketRef.current) {
                 // Emit the candidate to the server
@@ -299,10 +306,15 @@ function Stream() {
             }
         };
 
-        // continue on from the code below
+        // track peer remote stream
         peerConnection.current.ontrack = (event) => {
             if (event.streams && event.streams[0]) {
-                
+                if (peerVideoRef.current) {
+                    peerVideoRef.current.srcObject = event.streams[0];
+
+                    // peer joined
+                    SetHasPeerNotJoinedYet(false);
+                }
             }
         };
 
@@ -350,6 +362,7 @@ function Stream() {
         <>
             <Screen
                 isMyWebcamLoading={isMyWebcamLoading}
+                hasPeerNotJoinedYet={hasPeerNotJoinedYet}
                 refs={refs}
             />
             <Setting
