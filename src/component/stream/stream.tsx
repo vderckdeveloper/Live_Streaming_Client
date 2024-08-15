@@ -232,7 +232,7 @@ function Stream() {
 
 
     // create peer connection
-    const createPeerConnection = (peerId: string): RTCPeerConnection => {
+    const createPeerConnectionForOfferMember = (peerId: string): RTCPeerConnection => {
         // ice server
         const ICE_SERVERS = [
             {
@@ -291,7 +291,7 @@ function Stream() {
     };
 
     // create peer connection
-    const createPeerConnectionForTheAnswerer = (offerId: string, peerId: string): RTCPeerConnection => {
+    const createPeerConnectionForAnswerMember = (offerId: string, peerId: string): RTCPeerConnection => {
         // ice server
         const ICE_SERVERS = [
             {
@@ -349,9 +349,9 @@ function Stream() {
         return pc;
     };
 
-    // signaling server
+    // start video and signaling communication
     useEffect(() => {
-        async function startVideoAndSignaling() {
+        async function startVideoAndSignalingCommunication() {
             // Stop the previous stream if it exists
             if (streamRef.current) {
                 streamRef.current.getTracks().forEach(track => track.stop());
@@ -400,7 +400,7 @@ function Stream() {
                 const { offerId, peerId } = data;
 
                 if (!peerConnections.current.has(peerId)) {
-                    const pc = createPeerConnection(peerId);
+                    const pc = createPeerConnectionForOfferMember(peerId);
                     if (streamRef.current) {
                         streamRef.current.getTracks().forEach(track => {
                             pc.addTrack(track, streamRef.current!);
@@ -432,7 +432,7 @@ function Stream() {
                 
                 if (offer && offer.sdp && offer.type) {
                     try {
-                        const pc = createPeerConnectionForTheAnswerer(offerId, peerId);
+                        const pc = createPeerConnectionForAnswerMember(offerId, peerId);
                         await pc.setRemoteDescription(new RTCSessionDescription(offer));
 
                         // Re-add the tracks just in case (optional, depending on your flow)
@@ -474,7 +474,7 @@ function Stream() {
             });
         }
 
-        startVideoAndSignaling();
+        startVideoAndSignalingCommunication();
 
         return () => {
             peerConnections.current.forEach(pc => pc.close());
