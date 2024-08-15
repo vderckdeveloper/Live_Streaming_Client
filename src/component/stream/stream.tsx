@@ -245,6 +245,7 @@ function Stream() {
             },
         ];
 
+        // instanitate rtc peer connection
         const pc = new RTCPeerConnection({
             iceServers: ICE_SERVERS
         });
@@ -286,6 +287,7 @@ function Stream() {
             }
         };
 
+        // set peer connection
         peerConnections.current.set(peerId, pc);
         return pc;
     };
@@ -304,6 +306,7 @@ function Stream() {
             },
         ];
 
+        // instanitate rtc peer connection
         const pc = new RTCPeerConnection({
             iceServers: ICE_SERVERS
         });
@@ -345,6 +348,7 @@ function Stream() {
             }
         };
 
+        // set peer connection
         peerConnections.current.set(peerId, pc);
         return pc;
     };
@@ -382,7 +386,7 @@ function Stream() {
             const roomCode = pathName.split('/')[2];
             if (!roomCode) return;
 
-            // signaling server connection
+            // websocket signaling server connection
             webSocketRef.current = io(`${process.env.NEXT_PUBLIC_DIRECT_SOCKET_URL}/websocket/webrtc-signal`, {
                 withCredentials: true,
                 autoConnect: true,
@@ -391,12 +395,20 @@ function Stream() {
                 transports: ["websocket"],
             });
 
+            // websocket - handle connection
             webSocketRef.current.on('connect', () => {
                 console.log('websocket signaling server Connected!');
                 webSocketRef.current?.emit('register', roomCode);
             });
 
+            // websocket - handle register
             webSocketRef.current.on('register', (data) => {
+                /***
+                 * only the later joined member 'register' (the previosuly joined member always answer, does not initiate the offer first)
+                 * this is where the member who offers create the 'offer' (the later joined member)
+                 * create offer and configure local SDP description
+                 * send it to the member who answers and configure offer SDP in their setting (the later joined member)
+                 */
                 const { offerId, peerId } = data;
 
                 if (!peerConnections.current.has(peerId)) {
@@ -413,7 +425,7 @@ function Stream() {
                 }
             });
 
-            // Handle incoming ICE candidates from other peers
+            // websocket - handle candidate 
             webSocketRef.current.on('candidate', async (data) => {
                 const { candidate, peerId } = data;
                 try {
@@ -427,9 +439,15 @@ function Stream() {
                 }
             });
 
+            // websocket - handle offer
             webSocketRef.current.on('offer', async (data) => {
+                /***
+                 * this is where the member who answers gets the 'offer' (the previously joined member)
+                 * create offer and configure SDP description
+                 * send it to the member who offered SDP first (the later joined member)
+                 */
                 const { offer, offerId, peerId } = data;
-                
+
                 if (offer && offer.sdp && offer.type) {
                     try {
                         const pc = createPeerConnectionForAnswerMember(offerId, peerId);
@@ -453,7 +471,12 @@ function Stream() {
                 }
             });
 
+            // websocket - handle answer
             webSocketRef.current.on('answer', async (data) => {
+                /***
+                 * this is where the member who offered gets the 'answer' (the later joined member)
+                 * gets the answer and set SDP description
+                 */
                 const { answer, peerId } = data;
 
                 const pc = peerConnections.current.get(peerId);
@@ -463,19 +486,21 @@ function Stream() {
                 }
             });
 
-            // Handle connection errors
+            // websocket - connection errors
             webSocketRef.current.on('connect_error', (error: unknown) => {
                 console.error("Socket.IO connection error: ", error);
             });
 
-            // Handle connection close
+            // webscoket - connection close
             webSocketRef.current.on('disconnect', () => {
                 console.log("Socket.IO connection closed.");
             });
         }
 
+        // execute startVideoAndSignalingCommunication()
         startVideoAndSignalingCommunication();
 
+        // clean up
         return () => {
             peerConnections.current.forEach(pc => pc.close());
             peerConnections.current.clear();
