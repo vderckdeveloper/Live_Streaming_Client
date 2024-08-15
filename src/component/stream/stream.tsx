@@ -7,9 +7,13 @@ import Screen from "./screen";
 import Setting from "./setting";
 
 interface Refs {
+    // my side
     videoRef: React.RefObject<HTMLVideoElement>;
-    peerVideoRef: React.RefObject<HTMLVideoElement>;
     streamRef: React.MutableRefObject<MediaStream | null>;
+    // peer side
+    firstPeerVideoRef: React.RefObject<HTMLVideoElement>;
+    secondPeerVideoRef: React.RefObject<HTMLVideoElement>;
+    thirdPeerVideoRef: React.RefObject<HTMLVideoElement>;
 }
 
 interface ScreenRecordingError {
@@ -32,21 +36,29 @@ function Stream() {
     const webSocketRef = useRef<Socket | null>(null);
 
     // peer connection
-    const peerConnection = useRef<RTCPeerConnection | null>(null);
+    const peerConnections = useRef<Map<string, RTCPeerConnection>>(new Map());
 
     // my side ref
     const videoRef = useRef<HTMLVideoElement>(null); // local video stream
     const streamRef = useRef<MediaStream | null>(null);
     const screenRecordingRef = useRef<MediaStream | null>(null);
 
-    // remote side ref
-    const peerVideoRef = useRef<HTMLVideoElement>(null); // peer video stream
+    // peer video 
+    const firstPeerVideoRef = useRef<HTMLVideoElement>(null);
+    const secondPeerVideoRef = useRef<HTMLVideoElement>(null);
+    const thirdPeerVideoRef = useRef<HTMLVideoElement>(null);
+
+    // New state to keep track of assigned peer video elements
+    const assignedVideos = useRef<Map<string, React.RefObject<HTMLVideoElement>>>(new Map());
+    const availableVideoRefs = [firstPeerVideoRef, secondPeerVideoRef, thirdPeerVideoRef];
 
     // objectify refs
     const refs: Refs = {
         videoRef,
-        peerVideoRef,
         streamRef,
+        firstPeerVideoRef,
+        secondPeerVideoRef,
+        thirdPeerVideoRef,
     }
 
     // path name
@@ -70,7 +82,9 @@ function Stream() {
 
             // peer connection
             stream.getTracks().forEach(track => {
-                peerConnection.current?.addTrack(track, stream);
+                peerConnections.current.forEach(pc => {
+                    pc.addTrack(track, stream);
+                });
             });
 
             // webcam loading status
@@ -108,9 +122,10 @@ function Stream() {
 
             // peer connection
             combinedStream.getTracks().forEach(track => {
-                peerConnection.current?.addTrack(track, combinedStream);
+                peerConnections.current.forEach(pc => {
+                    pc.addTrack(track, combinedStream);
+                });
             });
-
             // reflect webcam streaming to the active stream
             streamRef.current = combinedStream;
 
@@ -215,74 +230,10 @@ function Stream() {
         }
     };
 
-    // start video streaming after the component is mounted
-    useEffect(() => {
-        onStartVideo();
-    }, []);
 
-    // signaling server
-    useEffect(() => {
-        // room code from the path
-        const roomCode = pathName.split('/')[2];
-        if (!roomCode) return;
-
-        // signaling server connection
-        webSocketRef.current = io(`${process.env.NEXT_PUBLIC_DIRECT_SOCKET_URL}/websocket/webrtc-signal`, {
-            withCredentials: true,
-            autoConnect: true,
-            reconnectionAttempts: 10,
-            reconnectionDelay: 3000,
-            transports: ["websocket"],
-        });
-
-        webSocketRef.current.on('connect', () => {
-            console.log('websocket signaling server Connected!');
-            webSocketRef.current?.emit('register', roomCode);
-        });
-
-        // Handle incoming ICE candidates from other peers
-        webSocketRef.current.on('candidate', async (candidate) => {
-            try {
-                if (peerConnection.current) {
-                    await peerConnection.current.addIceCandidate(new RTCIceCandidate(candidate));
-                    console.log('Added ICE candidate:', candidate);
-                }
-            } catch (error) {
-                console.error('Error adding received ICE candidate', error);
-            }
-        });
-
-        webSocketRef.current.on('offer', async (offer) => {
-            if (peerConnection.current) {
-                await peerConnection.current.setRemoteDescription(new RTCSessionDescription(offer));
-                const answer = await peerConnection.current.createAnswer();
-                await peerConnection.current.setLocalDescription(answer);
-
-                // send answer
-                webSocketRef.current?.emit('answer', answer);
-            }
-        });
-
-        webSocketRef.current.on('answer', async (answer) => {
-            if (peerConnection.current) {
-                await peerConnection.current.setRemoteDescription(new RTCSessionDescription(answer));
-            }
-        });
-
-        // Handle connection errors
-        webSocketRef.current.on('connect_error', (error: unknown) => {
-            console.error("Socket.IO connection error: ", error);
-        });
-
-        // Handle connection close
-        webSocketRef.current.on('disconnect', () => {
-            console.log("Socket.IO connection closed.");
-        });
-    }, []);
-
-    // peer connection
-    useEffect(() => {
-        // ICE SERVER
+    // create peer connection
+    const createPeerConnection = (peerId: string): RTCPeerConnection => {
+        // ice server
         const ICE_SERVERS = [
             {
                 urls: 'stun:stun.l.google.com:19302',
@@ -294,67 +245,240 @@ function Stream() {
             },
         ];
 
-        peerConnection.current = new RTCPeerConnection({
+        const pc = new RTCPeerConnection({
             iceServers: ICE_SERVERS
         });
 
         // ice candidate
-        peerConnection.current.onicecandidate = (event) => {
+        pc.onicecandidate = (event) => {
             if (event.candidate && webSocketRef.current) {
-                // Emit the candidate to the server
-                webSocketRef.current.emit('candidate', event.candidate);
+                webSocketRef.current.emit('candidate', { candidate: event.candidate, peerId });
             }
         };
 
-        // track peer remote stream
-        peerConnection.current.ontrack = (event) => {
-            if (event.streams && event.streams[0]) {
-                if (peerVideoRef.current) {
-                    peerVideoRef.current.srcObject = event.streams[0];
+        // track peer connection
+        pc.ontrack = (event) => {
+            // Handle remote streams here
+            console.log('event stream:', event.streams[0]);
 
-                    // peer joined
-                    SetHasPeerNotJoinedYet(false);
+            const stream = event.streams[0];
+
+            // Check if the peer already has a video element assigned
+            if (!assignedVideos.current.has(peerId)) {
+                // Assign the next available video element
+                const availableRef = availableVideoRefs.find(ref => !ref.current?.srcObject);
+                if (availableRef) {
+                    availableRef.current!.srcObject = stream;
+                    assignedVideos.current.set(peerId, availableRef);
+                } else {
+                    console.error("No available video elements for new participant.");
                 }
             }
         };
 
-        // Monitor ICE gathering state
-        peerConnection.current.addEventListener('icegatheringstatechange', () => {
-            console.log('ICE Gathering State:', peerConnection.current?.iceGatheringState);
+        // Monitor ICE connection state
+        pc.oniceconnectionstatechange = () => {
+            console.log('ice connection state', pc.iceConnectionState);
+            // You can add additional handling here, e.g., notify the user if the state is 'failed'
+            if (pc.iceConnectionState === 'failed') {
+                // Handle reconnection or other logic
+                console.error('ice connection failed!');
+            }
+        };
+
+        peerConnections.current.set(peerId, pc);
+        return pc;
+    };
+
+    // create peer connection
+    const createPeerConnectionForTheAnswerer = (offerId: string, peerId: string): RTCPeerConnection => {
+        // ice server
+        const ICE_SERVERS = [
+            {
+                urls: 'stun:stun.l.google.com:19302',
+            },
+            {
+                urls: `${process.env.NEXT_PUBLIC_COTURN_SERVER_URL}`,
+                username: process.env.NEXT_PUBLIC_COTURN_SERVER_USERNAME,
+                credential: process.env.NEXT_PUBLIC_COTURN_SERVER_CREDENTIAL,
+            },
+        ];
+
+        const pc = new RTCPeerConnection({
+            iceServers: ICE_SERVERS
         });
 
-        // Start video and add tracks to the peer connection
-        const startVideoAndAddTracks = async () => {
-            try {
-                // Get user media (video and audio)
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-
-                // Add each track to the peer connection
-                stream.getTracks().forEach(track => {
-                    peerConnection.current?.addTrack(track, stream);
-                });
-
-                // Create an offer
-                const offer = await peerConnection.current?.createOffer();
-
-                // Set the local description with the created offer
-                if (offer) {
-                    await peerConnection.current?.setLocalDescription(offer);
-                    console.log('Local description set, ICE gathering should start.');
-
-                    // Send the offer to the signaling server
-                    if (webSocketRef.current) {
-                        webSocketRef.current.emit('offer', offer);
-                    }
-                }
-            } catch (error) {
-                console.error('Error during WebRTC setup:', error);
+        // ice candidate
+        pc.onicecandidate = (event) => {
+            if (event.candidate && webSocketRef.current) {
+                webSocketRef.current.emit('candidate', { candidate: event.candidate, peerId });
             }
         };
-        startVideoAndAddTracks();
+
+        // track peer connection
+        pc.ontrack = (event) => {
+            // Handle remote streams here
+            console.log('event stream:', event.streams[0]);
+
+            const stream = event.streams[0];
+
+            // Check if the peer already has a video element assigned
+            if (!assignedVideos.current.has(offerId)) {
+                // Assign the next available video element
+                const availableRef = availableVideoRefs.find(ref => !ref.current?.srcObject);
+                if (availableRef) {
+                    availableRef.current!.srcObject = stream;
+                    assignedVideos.current.set(offerId, availableRef);
+                } else {
+                    console.error("No available video elements for new participant.");
+                }
+            }
+        };
+
+        // Monitor ICE connection state
+        pc.oniceconnectionstatechange = () => {
+            console.log('ice connection state', pc.iceConnectionState);
+            // You can add additional handling here, e.g., notify the user if the state is 'failed'
+            if (pc.iceConnectionState === 'failed') {
+                // Handle reconnection or other logic
+                console.error('ice connection failed!');
+            }
+        };
+
+        peerConnections.current.set(peerId, pc);
+        return pc;
+    };
+
+    // signaling server
+    useEffect(() => {
+        async function startVideoAndSignaling() {
+            // Stop the previous stream if it exists
+            if (streamRef.current) {
+                streamRef.current.getTracks().forEach(track => track.stop());
+            }
+
+            // start webcam stream
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+                // current status off status
+                setIsCurrentScreenOff(true);
+            }
+
+            // peer connection
+            stream.getTracks().forEach(track => {
+                peerConnections.current.forEach(pc => {
+                    pc.addTrack(track, stream);
+                });
+            });
+
+            // webcam loading status
+            setIsMyWebcamloading(false);
+
+            // reflect webcam streaming to the active stream
+            streamRef.current = stream;
+
+            // room code from the path
+            const roomCode = pathName.split('/')[2];
+            if (!roomCode) return;
+
+            // signaling server connection
+            webSocketRef.current = io(`${process.env.NEXT_PUBLIC_DIRECT_SOCKET_URL}/websocket/webrtc-signal`, {
+                withCredentials: true,
+                autoConnect: true,
+                reconnectionAttempts: 10,
+                reconnectionDelay: 3000,
+                transports: ["websocket"],
+            });
+
+            webSocketRef.current.on('connect', () => {
+                console.log('websocket signaling server Connected!');
+                webSocketRef.current?.emit('register', roomCode);
+            });
+
+            webSocketRef.current.on('register', (data) => {
+                const { offerId, peerId } = data;
+
+                if (!peerConnections.current.has(peerId)) {
+                    const pc = createPeerConnection(peerId);
+                    if (streamRef.current) {
+                        streamRef.current.getTracks().forEach(track => {
+                            pc.addTrack(track, streamRef.current!);
+                        });
+                        pc.createOffer().then(offer => {
+                            pc.setLocalDescription(offer);
+                            webSocketRef.current?.emit('offer', { offer, offerId, peerId });
+                        });
+                    }
+                }
+            });
+
+            // Handle incoming ICE candidates from other peers
+            webSocketRef.current.on('candidate', async (data) => {
+                const { candidate, peerId } = data;
+                try {
+                    const pc = peerConnections.current.get(peerId);
+                    if (pc) {
+                        await pc.addIceCandidate(new RTCIceCandidate(candidate));
+                        console.log('Added ICE candidate:', candidate);
+                    }
+                } catch (error) {
+                    console.error('Error adding received ICE candidate', error);
+                }
+            });
+
+            webSocketRef.current.on('offer', async (data) => {
+                const { offer, offerId, peerId } = data;
+                
+                if (offer && offer.sdp && offer.type) {
+                    try {
+                        const pc = createPeerConnectionForTheAnswerer(offerId, peerId);
+                        await pc.setRemoteDescription(new RTCSessionDescription(offer));
+
+                        // Re-add the tracks just in case (optional, depending on your flow)
+                        if (streamRef.current) {
+                            streamRef.current.getTracks().forEach(track => {
+                                pc.addTrack(track, streamRef.current!);
+                            });
+                        }
+
+                        const answer = await pc.createAnswer();
+                        await pc.setLocalDescription(answer);
+
+                        // send answer
+                        webSocketRef.current?.emit('answer', { answer, offerId, peerId });
+                    } catch (error) {
+                        console.error('Error setting remote description:', error);
+                    }
+                }
+            });
+
+            webSocketRef.current.on('answer', async (data) => {
+                const { answer, peerId } = data;
+
+                const pc = peerConnections.current.get(peerId);
+
+                if (pc) {
+                    await pc.setRemoteDescription(new RTCSessionDescription(answer));
+                }
+            });
+
+            // Handle connection errors
+            webSocketRef.current.on('connect_error', (error: unknown) => {
+                console.error("Socket.IO connection error: ", error);
+            });
+
+            // Handle connection close
+            webSocketRef.current.on('disconnect', () => {
+                console.log("Socket.IO connection closed.");
+            });
+        }
+
+        startVideoAndSignaling();
 
         return () => {
-            peerConnection.current?.close();
+            peerConnections.current.forEach(pc => pc.close());
+            peerConnections.current.clear();
         };
     }, []);
 
