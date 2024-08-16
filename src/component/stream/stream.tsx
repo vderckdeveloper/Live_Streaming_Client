@@ -257,7 +257,7 @@ function Stream() {
              * send ice candidate so that the member who answers can accpet ice candidate list
              */
             if (event.candidate && webSocketRef.current) {
-                webSocketRef.current.emit('candidate', { candidate: event.candidate, offerId, answerId });
+                webSocketRef.current.emit('offercandidate', { candidate: event.candidate, offerId, answerId });
             }
         };
 
@@ -297,7 +297,7 @@ function Stream() {
     };
 
     // create peer connection
-    const createPeerConnectionForAnswerMember = (offerId: string): RTCPeerConnection => {
+    const createPeerConnectionForAnswerMember = (offerId: string, answerId: string): RTCPeerConnection => {
         // ice server
         const ICE_SERVERS = [
             {
@@ -323,11 +323,11 @@ function Stream() {
          * if you send candidadtes one by one, it is a Trickle ICE
          * it is possible to establish connection if one side sends the candidate because of the support of peer reflexive candidates.
          */ 
-        // pc.onicecandidate = (event) => {
-        //     if (event.candidate && webSocketRef.current) {
-        //         webSocketRef.current.emit('candidate', { candidate: event.candidate, answerId });
-        //     }
-        // };
+        pc.onicecandidate = (event) => {
+            if (event.candidate && webSocketRef.current) {
+                webSocketRef.current.emit('answercandidate', { candidate: event.candidate, offerId, answerId });
+            }
+        };
 
         // track peer connection
         pc.ontrack = (event) => {
@@ -437,16 +437,35 @@ function Stream() {
                 }
             });
 
-            // websocket - handle candidate 
-            webSocketRef.current.on('candidate', async (data) => {
+            // websocket - handle offer candidate 
+            webSocketRef.current.on('offercandidate', async (data) => {
                 /***
-                 * this is where the member who answers gets the 'ice candidate' (the previously joined member)
-                 * create offer and configure SDP description
-                 * send it to the member who offered SDP first (the later joined member)
+                 * this is where the member who answers gets the 'ice candidate' from the member who offers (the previously joined member)
+                 * sets ice candidate list
                  */
                 const { candidate, offerId } = data;
                 try {
                     const pc = peerConnections.current.get(offerId);
+                    if (pc) {
+                        await pc.addIceCandidate(new RTCIceCandidate(candidate));
+                    }
+                } catch (error) {
+                    console.error('Error adding received ICE candidate', error);
+                }
+            });
+
+            // websocket - handle answer candidate 
+            webSocketRef.current.on('answercandidate', async (data) => {
+                /***
+                 * this is where the member who offers gets the 'ice candidate' from the member who answers (the later joined member)
+                 * sets ice candidate list
+                 */
+                const { candidate, answerId } = data;
+
+                console.log('answer candidate triggered', answerId);
+
+                try {
+                    const pc = peerConnections.current.get(answerId);
                     if (pc) {
                         await pc.addIceCandidate(new RTCIceCandidate(candidate));
                     }
@@ -467,7 +486,7 @@ function Stream() {
                 if (offer && offer.sdp && offer.type) {
                     try {
                         // create peer connection
-                        const pc = createPeerConnectionForAnswerMember(offerId);
+                        const pc = createPeerConnectionForAnswerMember(offerId, answerId);
                         // set remote description
                         await pc.setRemoteDescription(new RTCSessionDescription(offer));
 
