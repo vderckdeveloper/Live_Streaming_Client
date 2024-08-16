@@ -317,12 +317,9 @@ function Stream() {
 
 
         /***
-         * ice candidate - comment out the section below 
-         * this is where the member who answers does not need to send ice candidate (the previously joined member)
-         * the member who answers gets the ice candidate through sdp (it is 'regular ice policy')
-         * if you send candidadtes one by one, it is a Trickle ICE
-         * it is possible to establish connection if one side sends the candidate because of the support of peer reflexive candidates.
-         */ 
+         * this is where the member who answers (the previously joined member) sends the ice candidate list to the member who offers (the later joined member) 
+         * send ice candidate so that the member who offers can accpet ice candidate list
+         */
         pc.onicecandidate = (event) => {
             if (event.candidate && webSocketRef.current) {
                 webSocketRef.current.emit('answercandidate', { candidate: event.candidate, offerId, answerId });
@@ -461,9 +458,6 @@ function Stream() {
                  * sets ice candidate list
                  */
                 const { candidate, answerId } = data;
-
-                console.log('answer candidate triggered', answerId);
-
                 try {
                     const pc = peerConnections.current.get(answerId);
                     if (pc) {
