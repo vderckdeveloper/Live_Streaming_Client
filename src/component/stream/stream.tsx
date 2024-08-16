@@ -319,8 +319,9 @@ function Stream() {
         /***
          * ice candidate - comment out the section below 
          * this is where the member who answers does not need to send ice candidate (the previously joined member)
-         * the member who answers gets the ice candidate and then add it 
-         * by using addICEcandidate() function  on the websocket 'candidate' below
+         * the member who answers gets the ice candidate through sdp (it is 'regular ice policy')
+         * if you send candidadtes one by one, it is a Trickle ICE
+         * it is possible to establish connection if one side sends the candidate because of the support of peer reflexive candidates.
          */ 
         // pc.onicecandidate = (event) => {
         //     if (event.candidate && webSocketRef.current) {
