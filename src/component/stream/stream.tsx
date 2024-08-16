@@ -252,6 +252,10 @@ function Stream() {
 
         // ice candidate
         pc.onicecandidate = (event) => {
+            /***
+             * this is where the member who offers (the later joined member) sends the ice candidate list to the member who answers (the previously joined member) 
+             * send ice candidate so that the member who answers can accpet ice candidate list
+             */
             if (event.candidate && webSocketRef.current) {
                 webSocketRef.current.emit('candidate', { candidate: event.candidate, peerId });
             }
@@ -311,18 +315,22 @@ function Stream() {
             iceServers: ICE_SERVERS
         });
 
-        // ice candidate
-        pc.onicecandidate = (event) => {
-            if (event.candidate && webSocketRef.current) {
-                webSocketRef.current.emit('candidate', { candidate: event.candidate, peerId });
-            }
-        };
+
+        /***
+         * ice candidate - comment out the section below 
+         * this is where the member who answers does not need to send ice candidate (the previously joined member)
+         * the member who answers gets the ice candidate and then add it 
+         * by using addICEcandidate() function  on the websocket 'candidate' below
+         */ 
+        // pc.onicecandidate = (event) => {
+        //     if (event.candidate && webSocketRef.current) {
+        //         webSocketRef.current.emit('candidate', { candidate: event.candidate, peerId });
+        //     }
+        // };
 
         // track peer connection
         pc.ontrack = (event) => {
-            // Handle remote streams here
-            console.log('event stream:', event.streams[0]);
-
+            // remote stream
             const stream = event.streams[0];
 
             // Check if the peer already has a video element assigned
@@ -427,6 +435,11 @@ function Stream() {
 
             // websocket - handle candidate 
             webSocketRef.current.on('candidate', async (data) => {
+                /***
+                 * this is where the member who answers gets the 'ice candidate' (the previously joined member)
+                 * create offer and configure SDP description
+                 * send it to the member who offered SDP first (the later joined member)
+                 */
                 const { candidate, peerId } = data;
                 try {
                     const pc = peerConnections.current.get(peerId);
@@ -453,7 +466,7 @@ function Stream() {
                         const pc = createPeerConnectionForAnswerMember(offerId, peerId);
                         await pc.setRemoteDescription(new RTCSessionDescription(offer));
 
-                        // Re-add the tracks just in case (optional, depending on your flow)
+                        // Re-add the tracks
                         if (streamRef.current) {
                             streamRef.current.getTracks().forEach(track => {
                                 pc.addTrack(track, streamRef.current!);
@@ -474,7 +487,7 @@ function Stream() {
             // websocket - handle answer
             webSocketRef.current.on('answer', async (data) => {
                 /***
-                 * this is where the member who offered gets the 'answer' (the later joined member)
+                 * this is where the member who offers gets the 'answer' (the later joined member)
                  * gets the answer and set SDP description
                  */
                 const { answer, peerId } = data;
