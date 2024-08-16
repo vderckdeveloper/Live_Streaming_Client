@@ -232,7 +232,7 @@ function Stream() {
 
 
     // create peer connection
-    const createPeerConnectionForOfferMember = (answerId: string): RTCPeerConnection => {
+    const createPeerConnectionForOfferMember = (offerId: string, answerId: string): RTCPeerConnection => {
         // ice server
         const ICE_SERVERS = [
             {
@@ -257,7 +257,7 @@ function Stream() {
              * send ice candidate so that the member who answers can accpet ice candidate list
              */
             if (event.candidate && webSocketRef.current) {
-                webSocketRef.current.emit('candidate', { candidate: event.candidate, answerId });
+                webSocketRef.current.emit('candidate', { candidate: event.candidate, offerId, answerId });
             }
         };
 
@@ -297,7 +297,7 @@ function Stream() {
     };
 
     // create peer connection
-    const createPeerConnectionForAnswerMember = (offerId: string, answerId: string): RTCPeerConnection => {
+    const createPeerConnectionForAnswerMember = (offerId: string): RTCPeerConnection => {
         // ice server
         const ICE_SERVERS = [
             {
@@ -358,7 +358,7 @@ function Stream() {
         };
 
         // set peer connection
-        peerConnections.current.set(answerId, pc);
+        peerConnections.current.set(offerId, pc);
         return pc;
     };
 
@@ -422,7 +422,7 @@ function Stream() {
 
                 if (!peerConnections.current.has(answerId)) {
                     // create peer connection
-                    const pc = createPeerConnectionForOfferMember(answerId);
+                    const pc = createPeerConnectionForOfferMember(offerId, answerId);
                     if (streamRef.current) {
                         // add track
                         streamRef.current.getTracks().forEach(track => {
@@ -444,9 +444,9 @@ function Stream() {
                  * create offer and configure SDP description
                  * send it to the member who offered SDP first (the later joined member)
                  */
-                const { candidate, answerId } = data;
+                const { candidate, offerId } = data;
                 try {
-                    const pc = peerConnections.current.get(answerId);
+                    const pc = peerConnections.current.get(offerId);
                     if (pc) {
                         await pc.addIceCandidate(new RTCIceCandidate(candidate));
                     }
@@ -467,7 +467,7 @@ function Stream() {
                 if (offer && offer.sdp && offer.type) {
                     try {
                         // create peer connection
-                        const pc = createPeerConnectionForAnswerMember(offerId, answerId);
+                        const pc = createPeerConnectionForAnswerMember(offerId);
                         // set remote description
                         await pc.setRemoteDescription(new RTCSessionDescription(offer));
 
