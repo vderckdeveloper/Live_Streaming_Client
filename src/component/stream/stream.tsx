@@ -232,7 +232,7 @@ function Stream() {
 
 
     // create peer connection
-    const createPeerConnectionForOfferMember = (peerId: string): RTCPeerConnection => {
+    const createPeerConnectionForOfferMember = (answerId: string): RTCPeerConnection => {
         // ice server
         const ICE_SERVERS = [
             {
@@ -257,7 +257,7 @@ function Stream() {
              * send ice candidate so that the member who answers can accpet ice candidate list
              */
             if (event.candidate && webSocketRef.current) {
-                webSocketRef.current.emit('candidate', { candidate: event.candidate, peerId });
+                webSocketRef.current.emit('candidate', { candidate: event.candidate, answerId });
             }
         };
 
@@ -269,12 +269,12 @@ function Stream() {
             const stream = event.streams[0];
 
             // Check if the peer already has a video element assigned
-            if (!assignedVideos.current.has(peerId)) {
+            if (!assignedVideos.current.has(answerId)) {
                 // Assign the next available video element
                 const availableRef = availableVideoRefs.find(ref => !ref.current?.srcObject);
                 if (availableRef) {
                     availableRef.current!.srcObject = stream;
-                    assignedVideos.current.set(peerId, availableRef);
+                    assignedVideos.current.set(answerId, availableRef);
                 } else {
                     console.error("No available video elements for new participant.");
                 }
@@ -292,12 +292,12 @@ function Stream() {
         };
 
         // set peer connection
-        peerConnections.current.set(peerId, pc);
+        peerConnections.current.set(answerId, pc);
         return pc;
     };
 
     // create peer connection
-    const createPeerConnectionForAnswerMember = (offerId: string, peerId: string): RTCPeerConnection => {
+    const createPeerConnectionForAnswerMember = (offerId: string, answerId: string): RTCPeerConnection => {
         // ice server
         const ICE_SERVERS = [
             {
@@ -324,7 +324,7 @@ function Stream() {
          */ 
         // pc.onicecandidate = (event) => {
         //     if (event.candidate && webSocketRef.current) {
-        //         webSocketRef.current.emit('candidate', { candidate: event.candidate, peerId });
+        //         webSocketRef.current.emit('candidate', { candidate: event.candidate, answerId });
         //     }
         // };
 
@@ -357,7 +357,7 @@ function Stream() {
         };
 
         // set peer connection
-        peerConnections.current.set(peerId, pc);
+        peerConnections.current.set(answerId, pc);
         return pc;
     };
 
@@ -417,17 +417,20 @@ function Stream() {
                  * create offer and configure local SDP description
                  * send it to the member who answers and configure offer SDP in their setting (the later joined member)
                  */
-                const { offerId, peerId } = data;
+                const { offerId, answerId } = data;
 
-                if (!peerConnections.current.has(peerId)) {
-                    const pc = createPeerConnectionForOfferMember(peerId);
+                if (!peerConnections.current.has(answerId)) {
+                    // create peer connection
+                    const pc = createPeerConnectionForOfferMember(answerId);
                     if (streamRef.current) {
+                        // add track
                         streamRef.current.getTracks().forEach(track => {
                             pc.addTrack(track, streamRef.current!);
                         });
+                        // create offer and set local description
                         pc.createOffer().then(offer => {
                             pc.setLocalDescription(offer);
-                            webSocketRef.current?.emit('offer', { offer, offerId, peerId });
+                            webSocketRef.current?.emit('offer', { offer, offerId, answerId });
                         });
                     }
                 }
@@ -440,12 +443,11 @@ function Stream() {
                  * create offer and configure SDP description
                  * send it to the member who offered SDP first (the later joined member)
                  */
-                const { candidate, peerId } = data;
+                const { candidate, answerId } = data;
                 try {
-                    const pc = peerConnections.current.get(peerId);
+                    const pc = peerConnections.current.get(answerId);
                     if (pc) {
                         await pc.addIceCandidate(new RTCIceCandidate(candidate));
-                        console.log('Added ICE candidate:', candidate);
                     }
                 } catch (error) {
                     console.error('Error adding received ICE candidate', error);
@@ -459,25 +461,29 @@ function Stream() {
                  * create offer and configure SDP description
                  * send it to the member who offered SDP first (the later joined member)
                  */
-                const { offer, offerId, peerId } = data;
+                const { offer, offerId, answerId } = data;
 
                 if (offer && offer.sdp && offer.type) {
                     try {
-                        const pc = createPeerConnectionForAnswerMember(offerId, peerId);
+                        // create peer connection
+                        const pc = createPeerConnectionForAnswerMember(offerId, answerId);
+                        // set remote description
                         await pc.setRemoteDescription(new RTCSessionDescription(offer));
 
-                        // Re-add the tracks
+                        // re-add the tracks
                         if (streamRef.current) {
                             streamRef.current.getTracks().forEach(track => {
                                 pc.addTrack(track, streamRef.current!);
                             });
                         }
 
+                        // create answer
                         const answer = await pc.createAnswer();
+                        // set local description
                         await pc.setLocalDescription(answer);
 
                         // send answer
-                        webSocketRef.current?.emit('answer', { answer, offerId, peerId });
+                        webSocketRef.current?.emit('answer', { answer, offerId, answerId });
                     } catch (error) {
                         console.error('Error setting remote description:', error);
                     }
@@ -490,9 +496,9 @@ function Stream() {
                  * this is where the member who offers gets the 'answer' (the later joined member)
                  * gets the answer and set SDP description
                  */
-                const { answer, peerId } = data;
+                const { answer, answerId } = data;
 
-                const pc = peerConnections.current.get(peerId);
+                const pc = peerConnections.current.get(answerId);
 
                 if (pc) {
                     await pc.setRemoteDescription(new RTCSessionDescription(answer));
