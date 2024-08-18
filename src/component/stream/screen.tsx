@@ -20,36 +20,39 @@ const Screen = ({ isMyWebcamLoading, refs }: ScreenProps) => {
 
     const { videoRef, firstPeerVideoRef, secondPeerVideoRef, thirdPeerVideoRef } = refs;
 
-    const [isFirstPeerVideoReady, setIsFirstPeerVideoReady] = useState(false);
-    const [isSecondPeerVideoReady, setIsSecondPeerVideoReady] = useState(false);
-    const [isThirdPeerVideoReady, setIsThirdPeerVideoReady] = useState(false);
+    const [isOnlyMyVideoAvailable, setIsOnlyMyVideoAvailable] = useState<boolean>(true);
+    const [isFirstPeerVideoReady, setIsFirstPeerVideoReady] = useState<boolean>(false);
+    const [isSecondPeerVideoReady, setIsSecondPeerVideoReady] = useState<boolean>(false);
+    const [isThirdPeerVideoReady, setIsThirdPeerVideoReady] = useState<boolean>(false);
 
-    // update first peer video element screen
+    // adjust my screen size when i am the only one joining
     useEffect(() => {
-        const fistPeerVideoElement = firstPeerVideoRef.current;
+        const myVideoElement = videoRef.current;
         // update first peer video screen
-        if (fistPeerVideoElement) {
+        if (myVideoElement) {
             const handleFirstPeerVideoSrcObjectChange = () => {
-                if (fistPeerVideoElement.srcObject instanceof MediaStream && fistPeerVideoElement.srcObject.active) {
-                    setIsFirstPeerVideoReady(true);
+                if (myVideoElement.srcObject instanceof MediaStream && myVideoElement.srcObject.active) {
+                    setIsOnlyMyVideoAvailable(true);
                 }
             };
 
             // Listen for when the first peer video's metadata is loaded, indicating the stream is ready
-            fistPeerVideoElement.addEventListener('loadedmetadata', handleFirstPeerVideoSrcObjectChange);
+            myVideoElement.addEventListener('loadedmetadata', handleFirstPeerVideoSrcObjectChange);
 
             // clean up first peer video screen
             return () => {
-                fistPeerVideoElement.removeEventListener('loadedmetadata', handleFirstPeerVideoSrcObjectChange);
+                myVideoElement.removeEventListener('loadedmetadata', handleFirstPeerVideoSrcObjectChange);
             };
         }
-    }, [firstPeerVideoRef]);
+    }, [videoRef, firstPeerVideoRef, secondPeerVideoRef, thirdPeerVideoRef]);
 
+    // update peer video ready
     useEffect(() => {
         // Utility to handle setting video readiness state
         const handleVideoReady = (videoElement: HTMLVideoElement, setVideoReady: React.Dispatch<React.SetStateAction<boolean>>): void => {
             if (videoElement && videoElement.srcObject instanceof MediaStream && videoElement.srcObject.active) {
                 setVideoReady(true);
+                setIsOnlyMyVideoAvailable(false);
             }
         };
 
@@ -64,7 +67,8 @@ const Screen = ({ isMyWebcamLoading, refs }: ScreenProps) => {
         const eventListeners = peerVideos.map(({ ref, setReady }): (() => void) | undefined => {
             const videoElement = ref.current;
             if (videoElement) {
-                const handleMetadataLoaded = () => handleVideoReady(videoElement, setReady);
+                // chekc if peer video is ready and if my video is the only video
+                const handleMetadataLoaded = () => { handleVideoReady(videoElement, setReady), setIsOnlyMyVideoAvailable(false) };
                 videoElement.addEventListener('loadedmetadata', handleMetadataLoaded);
 
                 return () => videoElement.removeEventListener('loadedmetadata', handleMetadataLoaded);
@@ -78,9 +82,9 @@ const Screen = ({ isMyWebcamLoading, refs }: ScreenProps) => {
 
     return (
         <section className={styles['container']}>
-            <div className={styles['wrapper']}>
+            <div className={isOnlyMyVideoAvailable ? styles['my-only-screen-wrapper'] : styles['wrapper']}>
                 {/* my screen */}
-                <div className={styles['screen']}>
+                <div className={isOnlyMyVideoAvailable ? styles['my-only-screen'] : styles['screen']}>
                     <div className={styles['video-box']}>
                         <video autoPlay playsInline ref={videoRef}></video>
                         {
