@@ -29,9 +29,6 @@ function Stream() {
     const [isScreenRecordingOff, setIsScreenRecordingOff] = useState<boolean>(true);
     const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
 
-    // peer side
-    const [hasPeerNotJoinedYet, SetHasPeerNotJoinedYet] = useState<boolean>(true);
-
     // web socket ref
     const webSocketRef = useRef<Socket | null>(null);
 
@@ -544,7 +541,6 @@ function Stream() {
         <>
             <Screen
                 isMyWebcamLoading={isMyWebcamLoading}
-                hasPeerNotJoinedYet={hasPeerNotJoinedYet}
                 refs={refs}
             />
             <Setting
