@@ -30,7 +30,7 @@ function Stream() {
     const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
 
     // my video status
-    const [isOnlyMyVideoAvailable, setIsOnlyMyVideoAvailable] = useState<boolean>(true);
+    const [isOnlyMyVideoAvailable, setIsOnlyMyVideoAvailable] = useState<boolean>(false);
 
     // web socket ref
     const webSocketRef = useRef<Socket | null>(null);
@@ -410,6 +410,14 @@ function Stream() {
             webSocketRef.current.on('connect', () => {
                 console.log('websocket signaling server Connected!');
                 webSocketRef.current?.emit('register', roomCode);
+            });
+
+            // websocket - room member count
+            webSocketRef.current.on('roomMemberCount', (data) => {
+                const roomMemberCount = data;
+                if (roomMemberCount === 1) {
+                    setIsOnlyMyVideoAvailable(true);
+                }
             });
 
             // websocket - handle register
