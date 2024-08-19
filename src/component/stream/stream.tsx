@@ -364,6 +364,8 @@ function Stream() {
     useEffect(() => {
         if (!pathName) return;
 
+        const peerConnectionsCopy = peerConnections.current; // Store the reference in a variable
+
         async function startVideoAndSignalingCommunication() {
             // Stop the previous stream if it exists
             if (streamRef.current) {
@@ -380,7 +382,7 @@ function Stream() {
 
             // peer connection
             stream.getTracks().forEach(track => {
-                peerConnections.current.forEach(pc => {
+                peerConnectionsCopy.forEach(pc => {
                     pc.addTrack(track, stream);
                 });
             });
@@ -420,7 +422,7 @@ function Stream() {
                  */
                 const { offerId, answerId } = data;
 
-                if (!peerConnections.current.has(answerId)) {
+                if (!peerConnectionsCopy.has(answerId)) {
                     // create peer connection
                     const pc = createPeerConnectionForOfferMember(offerId, answerId);
                     if (streamRef.current) {
@@ -445,7 +447,7 @@ function Stream() {
                  */
                 const { candidate, offerId } = data;
                 try {
-                    const pc = peerConnections.current.get(offerId);
+                    const pc = peerConnectionsCopy.get(offerId);
                     if (pc) {
                         await pc.addIceCandidate(new RTCIceCandidate(candidate));
                     }
@@ -462,7 +464,7 @@ function Stream() {
                  */
                 const { candidate, answerId } = data;
                 try {
-                    const pc = peerConnections.current.get(answerId);
+                    const pc = peerConnectionsCopy.get(answerId);
                     if (pc) {
                         await pc.addIceCandidate(new RTCIceCandidate(candidate));
                     }
@@ -515,7 +517,7 @@ function Stream() {
                  */
                 const { answer, answerId } = data;
 
-                const pc = peerConnections.current.get(answerId);
+                const pc = peerConnectionsCopy.get(answerId);
 
                 if (pc) {
                     await pc.setRemoteDescription(new RTCSessionDescription(answer));
@@ -554,8 +556,8 @@ function Stream() {
 
         // clean up
         return () => {
-            peerConnections.current.forEach(pc => pc.close());
-            peerConnections.current.clear();
+            peerConnectionsCopy.forEach(pc => pc.close());
+            peerConnectionsCopy.clear();
         };
     }, [pathName, createPeerConnectionForAnswerMember, createPeerConnectionForOfferMember]);
 
