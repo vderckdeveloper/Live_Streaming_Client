@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import { io, Socket } from 'socket.io-client';
 
@@ -47,7 +47,9 @@ function Stream() {
 
     // New state to keep track of assigned peer video elements
     const assignedVideos = useRef<Map<string, React.RefObject<HTMLVideoElement>>>(new Map());
-    const availableVideoRefs = [firstPeerVideoRef, secondPeerVideoRef, thirdPeerVideoRef];
+    const availableVideoRefs = useMemo(() => {
+        return [firstPeerVideoRef, secondPeerVideoRef, thirdPeerVideoRef];
+    }, [firstPeerVideoRef, secondPeerVideoRef, thirdPeerVideoRef]);
 
     // objectify refs
     const refs: Refs = {
@@ -139,7 +141,6 @@ function Stream() {
                 // start video
                 onStartVideo();
 
-
                 console.error(error);
             } else {
                 console.error("Error starting screen recording: ", error);
@@ -229,7 +230,7 @@ function Stream() {
 
 
     // create peer connection
-    const createPeerConnectionForOfferMember = (offerId: string, answerId: string): RTCPeerConnection => {
+    const createPeerConnectionForOfferMember = useCallback((offerId: string, answerId: string): RTCPeerConnection => {
         // ice server
         const ICE_SERVERS = [
             {
@@ -291,10 +292,10 @@ function Stream() {
         // set peer connection
         peerConnections.current.set(answerId, pc);
         return pc;
-    };
+    }, [availableVideoRefs]);
 
     // create peer connection
-    const createPeerConnectionForAnswerMember = (offerId: string, answerId: string): RTCPeerConnection => {
+    const createPeerConnectionForAnswerMember = useCallback((offerId: string, answerId: string): RTCPeerConnection => {
         // ice server
         const ICE_SERVERS = [
             {
@@ -354,10 +355,12 @@ function Stream() {
         // set peer connection
         peerConnections.current.set(offerId, pc);
         return pc;
-    };
+    }, [availableVideoRefs]);
 
     // start video and signaling communication
     useEffect(() => {
+        if (!pathName) return;
+
         async function startVideoAndSignalingCommunication() {
             // Stop the previous stream if it exists
             if (streamRef.current) {
@@ -525,6 +528,14 @@ function Stream() {
             webSocketRef.current.on('disconnect', () => {
                 console.log("Socket.IO connection closed.");
             });
+
+            // webscoket - disconnected member id
+            webSocketRef.current.on('disconnectedMember', (memberId) => {
+                const assignedVideoRef = assignedVideos.current.get(memberId);
+                if (assignedVideoRef && assignedVideoRef.current) {
+                    assignedVideoRef.current.srcObject = null;
+                }
+            });
         }
 
         // execute startVideoAndSignalingCommunication()
@@ -535,7 +546,7 @@ function Stream() {
             peerConnections.current.forEach(pc => pc.close());
             peerConnections.current.clear();
         };
-    }, []);
+    }, [pathName, createPeerConnectionForAnswerMember, createPeerConnectionForOfferMember]);
 
     return (
         <>
