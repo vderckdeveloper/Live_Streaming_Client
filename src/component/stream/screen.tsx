@@ -13,14 +13,15 @@ interface Refs {
 
 interface ScreenProps {
     isMyWebcamLoading: boolean;
+    isOnlyMyVideoAvailable: boolean;
+    setIsOnlyMyVideoAvailable: React.Dispatch<React.SetStateAction<boolean>>;
     refs: Refs;
 }
 
-const Screen = ({ isMyWebcamLoading, refs }: ScreenProps) => {
+const Screen = ({ isMyWebcamLoading, isOnlyMyVideoAvailable, setIsOnlyMyVideoAvailable, refs }: ScreenProps) => {
 
     const { videoRef, firstPeerVideoRef, secondPeerVideoRef, thirdPeerVideoRef } = refs;
 
-    const [isOnlyMyVideoAvailable, setIsOnlyMyVideoAvailable] = useState<boolean>(true);
     const [isFirstPeerVideoReady, setIsFirstPeerVideoReady] = useState<boolean>(false);
     const [isSecondPeerVideoReady, setIsSecondPeerVideoReady] = useState<boolean>(false);
     const [isThirdPeerVideoReady, setIsThirdPeerVideoReady] = useState<boolean>(false);
@@ -44,7 +45,7 @@ const Screen = ({ isMyWebcamLoading, refs }: ScreenProps) => {
                 myVideoElement.removeEventListener('loadedmetadata', handleFirstPeerVideoSrcObjectChange);
             };
         }
-    }, [videoRef, firstPeerVideoRef, secondPeerVideoRef, thirdPeerVideoRef]);
+    }, [videoRef, setIsOnlyMyVideoAvailable]);
 
     // update peer video ready
     useEffect(() => {
@@ -78,7 +79,7 @@ const Screen = ({ isMyWebcamLoading, refs }: ScreenProps) => {
         return () => {
             eventListeners.forEach(cleanup => cleanup && cleanup());
         };
-    }, [firstPeerVideoRef, secondPeerVideoRef, thirdPeerVideoRef]);
+    }, [firstPeerVideoRef, secondPeerVideoRef, thirdPeerVideoRef, setIsOnlyMyVideoAvailable]);
 
     // check if first peer disconnects video. it checks srcObject is 'null'
     useEffect(() => {
@@ -122,12 +123,6 @@ const Screen = ({ isMyWebcamLoading, refs }: ScreenProps) => {
                 }
             }
 
-            // when first, second, third peer video are all null. change my screen size
-            if (firstPeerVideoElement && secondPeerVideoElement && thirdPeerVideoElement) {
-                if (!firstPeerVideoElement.srcObject && !secondPeerVideoElement.srcObject && !thirdPeerVideoElement.srcObject) {
-                    setIsOnlyMyVideoAvailable(true);
-                }
-            }
         }, 1000);
 
         return () => clearInterval(interval);
@@ -140,39 +135,41 @@ const Screen = ({ isMyWebcamLoading, refs }: ScreenProps) => {
                 <div className={isOnlyMyVideoAvailable ? styles['my-only-screen'] : styles['screen']}>
                     <div className={styles['video-box']}>
                         <video autoPlay playsInline ref={videoRef}></video>
-                        {
-                            isMyWebcamLoading
-                            &&
-                            <div className={styles['video-loader-box']}>
-                                <span className={styles['video-loader']}></span>
-                            </div>
-                        }
                     </div>
                     <h2 className={styles['video-text']}>내 화면</h2>
                 </div>
                 {/* other screen */}
-                <div className={styles['screen']} style={isFirstPeerVideoReady ? { display: 'flex' } : { display: 'none' }}>
+                <div className={styles['screen']} style={!isOnlyMyVideoAvailable && isFirstPeerVideoReady ? { display: 'flex' } : { display: 'none' }}>
                     <div className={styles['video-box']}>
                         <video autoPlay playsInline ref={firstPeerVideoRef}></video>
                     </div>
                     <h2 className={styles['video-text']}>상대방 화면</h2>
                 </div>
                 {/* other screen */}
-                <div className={styles['screen']} style={isSecondPeerVideoReady ? { display: 'flex' } : { display: 'none' }}>
+                <div className={styles['screen']} style={!isOnlyMyVideoAvailable && isSecondPeerVideoReady ? { display: 'flex' } : { display: 'none' }}>
                     <div className={styles['video-box']}>
                         <video autoPlay playsInline ref={secondPeerVideoRef}></video>
                     </div>
                     <h2 className={styles['video-text']}>상대방 화면</h2>
                 </div>
                 {/* other screen */}
-                <div className={styles['screen']} style={isThirdPeerVideoReady ? { display: 'flex' } : { display: 'none' }}>
+                <div className={styles['screen']} style={!isOnlyMyVideoAvailable && isThirdPeerVideoReady ? { display: 'flex' } : { display: 'none' }}>
                     <div className={styles['video-box']}>
                         <video autoPlay playsInline ref={thirdPeerVideoRef}></video>
                     </div>
                     <h2 className={styles['video-text']}>상대방 화면</h2>
                 </div>
             </div>
-        </section>
+            {
+                isMyWebcamLoading
+                &&
+                <div className={styles['screen-loader-container']}>
+                    <div className={styles['screen-loader-wrapper']}>
+                        <span className={styles['screen-loader']}></span>
+                    </div>
+                </div>
+            }
+        </section >
     )
 }
 
