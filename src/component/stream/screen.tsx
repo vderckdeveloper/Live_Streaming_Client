@@ -80,6 +80,59 @@ const Screen = ({ isMyWebcamLoading, refs }: ScreenProps) => {
         };
     }, [firstPeerVideoRef, secondPeerVideoRef, thirdPeerVideoRef]);
 
+    // check if first peer disconnects video. it checks srcObject is 'null'
+    useEffect(() => {
+        // Access the video element from the ref
+        const firstPeerVideoElement = firstPeerVideoRef.current;
+        const secondPeerVideoElement = secondPeerVideoRef.current;
+        const thirdPeerVideoElement = thirdPeerVideoRef.current;
+
+        // Store the initial srcObject to track changes
+        let lastFirstPeerSrcObject = firstPeerVideoElement ? firstPeerVideoElement.srcObject : null;
+        let lastSecondPeerSrcObject = secondPeerVideoElement ? secondPeerVideoElement.srcObject : null;
+        let lastThirdPeerSrcObject = thirdPeerVideoElement ? thirdPeerVideoElement.srcObject : null;
+
+        // Set up an interval to periodically check the srcObject
+        const interval = setInterval(() => {
+            // First, ensure the video element exists and check if the srcObject has changed
+            if (firstPeerVideoElement && firstPeerVideoElement.srcObject !== lastFirstPeerSrcObject) {
+                // Update lastFirstPeerSrcObject with the current srcObject from the video element
+                lastFirstPeerSrcObject = firstPeerVideoElement.srcObject;
+
+                // If the current srcObject is null, change the screen state 
+                if (!firstPeerVideoElement.srcObject) {
+                    setIsFirstPeerVideoReady(false);
+                }
+            }
+
+            // second peer video null check
+            if (secondPeerVideoElement && secondPeerVideoElement.srcObject !== lastSecondPeerSrcObject) {
+                lastSecondPeerSrcObject = secondPeerVideoElement.srcObject;
+
+                if (!secondPeerVideoElement.srcObject) {
+                    setIsSecondPeerVideoReady(false);
+                }
+            }
+
+            // third peer video null check
+            if (thirdPeerVideoElement && thirdPeerVideoElement.srcObject !== lastThirdPeerSrcObject) {
+                lastThirdPeerSrcObject = thirdPeerVideoElement.srcObject;
+                if (!thirdPeerVideoElement.srcObject) {
+                    setIsThirdPeerVideoReady(false);
+                }
+            }
+
+            // when first, second, third peer video are all null. change my screen size
+            if (firstPeerVideoElement && secondPeerVideoElement && thirdPeerVideoElement) {
+                if (!firstPeerVideoElement.srcObject && !secondPeerVideoElement.srcObject && !thirdPeerVideoElement.srcObject) {
+                    setIsOnlyMyVideoAvailable(true);
+                }
+            }
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [firstPeerVideoRef, secondPeerVideoRef, thirdPeerVideoRef]);
+
     return (
         <section className={styles['container']}>
             <div className={isOnlyMyVideoAvailable ? styles['my-only-screen-wrapper'] : styles['wrapper']}>
