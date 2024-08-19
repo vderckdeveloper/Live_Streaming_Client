@@ -26,27 +26,6 @@ const Screen = ({ isMyWebcamLoading, isOnlyMyVideoAvailable, setIsOnlyMyVideoAva
     const [isSecondPeerVideoReady, setIsSecondPeerVideoReady] = useState<boolean>(false);
     const [isThirdPeerVideoReady, setIsThirdPeerVideoReady] = useState<boolean>(false);
 
-    // adjust my screen size when i am the only one joining
-    useEffect(() => {
-        const myVideoElement = videoRef.current;
-        // update first peer video screen
-        if (myVideoElement) {
-            const handleFirstPeerVideoSrcObjectChange = () => {
-                if (myVideoElement.srcObject instanceof MediaStream && myVideoElement.srcObject.active) {
-                    setIsOnlyMyVideoAvailable(true);
-                }
-            };
-
-            // Listen for when the first peer video's metadata is loaded, indicating the stream is ready
-            myVideoElement.addEventListener('loadedmetadata', handleFirstPeerVideoSrcObjectChange);
-
-            // clean up first peer video screen
-            return () => {
-                myVideoElement.removeEventListener('loadedmetadata', handleFirstPeerVideoSrcObjectChange);
-            };
-        }
-    }, [videoRef, setIsOnlyMyVideoAvailable]);
-
     // update peer video ready
     useEffect(() => {
         // Utility to handle setting video readiness state
