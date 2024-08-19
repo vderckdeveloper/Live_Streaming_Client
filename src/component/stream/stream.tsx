@@ -29,6 +29,9 @@ function Stream() {
     const [isScreenRecordingOff, setIsScreenRecordingOff] = useState<boolean>(true);
     const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
 
+    // my video status
+    const [isOnlyMyVideoAvailable, setIsOnlyMyVideoAvailable] = useState<boolean>(true);
+
     // web socket ref
     const webSocketRef = useRef<Socket | null>(null);
 
@@ -530,10 +533,18 @@ function Stream() {
             });
 
             // webscoket - disconnected member id
-            webSocketRef.current.on('disconnectedMember', (memberId) => {
-                const assignedVideoRef = assignedVideos.current.get(memberId);
+            webSocketRef.current.on('disconnectedMember', (data) => {
+                const { disconnectedMemberId, roomMemberCount } = data;
+
+                // make other peers video srcObject null
+                const assignedVideoRef = assignedVideos.current.get(disconnectedMemberId);
                 if (assignedVideoRef && assignedVideoRef.current) {
                     assignedVideoRef.current.srcObject = null;
+                }
+
+                // make my screen bigger if i'm the only one attending
+                if (roomMemberCount === 1) {
+                    setIsOnlyMyVideoAvailable(true);
                 }
             });
         }
@@ -552,6 +563,8 @@ function Stream() {
         <>
             <Screen
                 isMyWebcamLoading={isMyWebcamLoading}
+                isOnlyMyVideoAvailable={isOnlyMyVideoAvailable}
+                setIsOnlyMyVideoAvailable={setIsOnlyMyVideoAvailable}
                 refs={refs}
             />
             <Setting
