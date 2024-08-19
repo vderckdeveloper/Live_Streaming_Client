@@ -32,6 +32,7 @@
     width: 100%;
     height: 100%;
     border-radius: 6px;
+    background-color: #000000;
     overflow: hidden;
 }
 
@@ -108,9 +109,17 @@
     }
 }
 
+/* height media query */
+@media all and (max-height: 840px) {
+    .container {
+        padding: 60px 0 120px 0;
+        height: auto;
+        overflow-y: auto;
+    }
+}
 
  /* height media query */
-@media all and (max-width: 840px), all and (max-height: 880px) {
+@media all and (max-width: 840px), all and (max-height: 640px) {
     .container {
         padding: 60px 0 120px 0;
         height: auto;
@@ -126,10 +135,27 @@
         gap: 40px 0;
     }
 
+    .my-only-screen-wrapper {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 40px 0;
+        width: 80%;
+        max-width: 1440px;
+    }
+
     .screen {
         flex-basis: 0;
         width: 100%;
-        min-height: 50vw;
+        min-height: 30vw;
+    }
+
+    .my-only-screen {
+        flex-basis: 0;
+        width: 100%;
+        min-height: 30vw;
     }
 
     .video-box > video {
@@ -138,19 +164,19 @@
 }
 
 @media all and (max-width: 640px) {
-    .screen {
+    .screen, .my-only-screen {
         min-height: 350px;
     }
 }
 
 @media all and (max-width: 540px) {
-    .screen {
+    .screen, .my-only-screen {
         min-height: 320px;
     }
 }
 
 @media all and (max-width: 480px) {
-    .screen {
+    .screen, .my-only-screen {
         min-height: 300px;
     }
 }
