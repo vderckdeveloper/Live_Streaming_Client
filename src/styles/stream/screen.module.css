@@ -125,8 +125,12 @@
 
 .video-text {
     margin-top: 30px;
-    font-weight: 600;
+    padding: 15px 20px;
+    font-weight: 700;
     font-size: 24px;
+    border-radius: 8px;
+    background-color: #1a73e8;
+    color: #ffffff;
 }
 
 /* my only screen */
