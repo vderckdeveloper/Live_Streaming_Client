@@ -27,6 +27,7 @@ function Stream() {
     const [isMyWebcamLoading, setIsMyWebcamloading] = useState<boolean>(true);
     const [isCurrentScreenOff, setIsCurrentScreenOff] = useState<boolean>(true);
     const [isScreenRecordingOff, setIsScreenRecordingOff] = useState<boolean>(true);
+    const [isScreenSharing, setIsScreenSharing] = useState<boolean>(false);
 
     // my video status
     const [isOnlyMyVideoAvailable, setIsOnlyMyVideoAvailable] = useState<boolean>(false);
@@ -120,6 +121,12 @@ function Stream() {
         // check if button is ready
         if (!micToggleReadyBtn.current) return;
 
+        // return if screen is being shared
+        if (isScreenSharing) {
+            alert('화면 공유중에는 음소거 할수 없습니다.');
+            return;
+        }
+
         micToggleReadyBtn.current = false;
 
         // turn off mic
@@ -179,6 +186,12 @@ function Stream() {
 
         // check if button is ready 
         if (!videoToggleReadyBtn.current) return;
+
+        // return if screen is being shared
+        if (isScreenSharing) {
+            alert('화면 공유중에는 비디오를 끌수 없습니다.');
+            return;
+        }
 
         videoToggleReadyBtn.current = false;
 
@@ -245,8 +258,6 @@ function Stream() {
             const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
-                // current status off status
-                setIsCurrentScreenOff(true);
             }
 
             // Reflect the new stream in peer connections
@@ -269,6 +280,18 @@ function Stream() {
 
     // share my current screen
     const onShareMyCurrentScreen = async (): Promise<void> => {
+        // return if mic is muted 
+        if (!isMicOn) {
+            alert('음소거 중에는 화면 공유하실수 없습니다.')
+            return;
+        }
+
+        // return if video is muted 
+        if (!isVideoOn) {
+            alert('화면을 끈 상태에서 화면 공유 하실수 없습니다.');
+            return;
+        }
+
         try {
             // Stop the previous stream if it exists
             if (streamRef.current) {
@@ -306,10 +329,17 @@ function Stream() {
             // reflect webcam streaming to the active stream
             streamRef.current = combinedStream;
 
+            // set screen sharing on
+            setIsScreenSharing(true);
+
             // restart webcam stream
             screenStream.getVideoTracks()[0].addEventListener('ended', () => {
                 onStartVideo();
+                // set screen sharing off
+                setIsScreenSharing(false);
             });
+
+
         } catch (error: unknown) {
             const recordingError = error as ScreenRecordingError;
             if (recordingError.name === 'NotAllowedError' || recordingError.name === 'NotFoundError') {
@@ -319,6 +349,8 @@ function Stream() {
                 // start video
                 onStartVideo();
 
+                // set screen sharing off
+                setIsScreenSharing(false);
                 console.error(error);
             } else {
                 console.error("Error starting screen recording: ", error);
@@ -328,6 +360,18 @@ function Stream() {
 
     // record my screen
     const onStartRecordingScreen = async (): Promise<void> => {
+        // return if mic is muted 
+        if (!isMicOn) {
+            alert('음소거 중에는 녹화 공유하실수 없습니다.')
+            return;
+        }
+
+        // return if video is muted 
+        if (!isVideoOn) {
+            alert('화면을 끈 상태에서 녹화 하실수 없습니다.');
+            return;
+        }
+
         try {
             // get video and audio streams
             const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'monitor' }, audio: true });
@@ -537,8 +581,6 @@ function Stream() {
             const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
-                // current status off status
-                setIsCurrentScreenOff(true);
             }
 
             // peer connection
