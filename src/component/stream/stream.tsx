@@ -27,7 +27,6 @@ function Stream() {
     const [isMyWebcamLoading, setIsMyWebcamloading] = useState<boolean>(true);
     const [isCurrentScreenOff, setIsCurrentScreenOff] = useState<boolean>(true);
     const [isScreenRecordingOff, setIsScreenRecordingOff] = useState<boolean>(true);
-    const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
 
     // my video status
     const [isOnlyMyVideoAvailable, setIsOnlyMyVideoAvailable] = useState<boolean>(false);
@@ -331,7 +330,7 @@ function Stream() {
     const onStartRecordingScreen = async (): Promise<void> => {
         try {
             // get video and audio streams
-            const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+            const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'monitor' }, audio: true });
             const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
             // combine streams
@@ -367,8 +366,11 @@ function Stream() {
                 recordedChunks = [];
             };
 
-            // set the recorder to state if needed
-            setMediaRecorder(recorder);
+            // Add an event listener to handle when screen sharing is stopped
+            screenStream.getVideoTracks()[0].addEventListener('ended', () => {
+                setIsScreenRecordingOff(true);
+                recorder.stop(); // Stop the recorder when screen sharing ends
+            });
 
             // recording status
             setIsScreenRecordingOff(false);
@@ -390,23 +392,6 @@ function Stream() {
             }
         }
     };
-
-    // stop recording screen
-    const onStopRecordingScreen = (): void => {
-        if (mediaRecorder) {
-            // stop recording
-            mediaRecorder.stop();
-
-            // recording status
-            setIsScreenRecordingOff(true);
-
-            if (screenRecordingRef.current) {
-                screenRecordingRef.current.getTracks().forEach(track => track.stop());
-                screenRecordingRef.current = null;
-            }
-        }
-    };
-
 
     // create peer connection
     const createPeerConnectionForOfferMember = useCallback((offerId: string, answerId: string): RTCPeerConnection => {
@@ -762,7 +747,6 @@ function Stream() {
                 onToggleMic={onToggleMic}
                 onShareMyCurrentScreen={onShareMyCurrentScreen}
                 onStartRecordingScreen={onStartRecordingScreen}
-                onStopRecordingScreen={onStopRecordingScreen}
             />
         </>
     )
