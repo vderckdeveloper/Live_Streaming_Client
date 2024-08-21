@@ -152,34 +152,18 @@ function Stream() {
                 track.enabled = true;
             });
 
-            // Stop the previous stream if it exists
-            if (streamRef.current) {
-                streamRef.current.getTracks().forEach(track => track.stop());
-            }
-
             // start webcam stream
             const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-            if (videoRef.current) {
-                videoRef.current.srcObject = stream;
-                // current status off status
-                setIsCurrentScreenOff(true);
-            }
 
             // Reflect the new stream in peer connections
             peerConnections.current.forEach((pc) => {
                 pc.getSenders().forEach((sender) => {
-                    if (sender.track?.kind === 'video') {
-                        const newVideoTrack = stream.getVideoTracks()[0];
-                        if (newVideoTrack) sender.replaceTrack(newVideoTrack);
-                    } else if (sender.track?.kind === 'audio') {
+                    if (sender.track?.kind === 'audio') {
                         const newAudioTrack = stream.getAudioTracks()[0];
                         if (newAudioTrack) sender.replaceTrack(newAudioTrack);
                     }
                 });
             });
-
-            // reflect webcam streaming to the active stream
-            streamRef.current = stream;
 
             // button ready
             micToggleReadyBtn.current = true;
@@ -207,6 +191,11 @@ function Stream() {
                 track.enabled = false;
             });
 
+            // Stop the previous stream if it exists
+            if (streamRef.current) {
+                streamRef.current.getTracks().forEach(track => track.stop());
+            }
+
             // Create a blank video track using an off-screen canvas
             const canvas = document.createElement('canvas');
             canvas.width = 640; // Set desired width
@@ -214,13 +203,14 @@ function Stream() {
             const context = canvas.getContext('2d');
 
             if (context) {
-                context.fillStyle = 'blue';
+                context.fillStyle = 'black';
                 context.fillRect(0, 0, canvas.width, canvas.height);
             }
 
             const blankStream = canvas.captureStream();
             const videoTrack = blankStream.getVideoTracks()[0]; // Get the blank video track
 
+            // local video stream
             if (videoRef.current) {
                 videoRef.current.srcObject = blankStream;
             }
@@ -266,15 +256,9 @@ function Stream() {
                     if (sender.track?.kind === 'video') {
                         const newVideoTrack = stream.getVideoTracks()[0];
                         if (newVideoTrack) sender.replaceTrack(newVideoTrack);
-                    } else if (sender.track?.kind === 'audio') {
-                        const newAudioTrack = stream.getAudioTracks()[0];
-                        if (newAudioTrack) sender.replaceTrack(newAudioTrack);
                     }
                 });
             });
-
-            // reflect webcam streaming to the active stream
-            streamRef.current = stream;
 
             // button ready
             videoToggleReadyBtn.current = true;
