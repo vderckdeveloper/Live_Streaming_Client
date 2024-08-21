@@ -11,50 +11,25 @@ interface Refs {
 interface ScreenProps {
     isCurrentScreenOff: boolean;
     isScreenRecordingOff: boolean;
+    isMicOn: boolean;
+    isVideoOn: boolean;
+    onToggleVideo: () => void;
+    onToggleMic: () => void;
     onShareMyCurrentScreen: () => Promise<void>;
     onStartRecordingScreen: () => Promise<void>;
     onStopRecordingScreen: () => void;
-    refs: Refs;
 }
 
-function Setting({ isCurrentScreenOff, isScreenRecordingOff, onShareMyCurrentScreen, onStartRecordingScreen, onStopRecordingScreen, refs }: ScreenProps) {
-
-    const { streamRef } = refs;
+function Setting({ isCurrentScreenOff, isScreenRecordingOff, isMicOn, isVideoOn, onToggleVideo, onToggleMic, onShareMyCurrentScreen, onStartRecordingScreen, onStopRecordingScreen }: ScreenProps) {
 
     // screen resize
     const [browserWidth, setBrowserWidth] = useState<number>();
-
-    // option on/off
-    const [isMicOn, setIsMicOn] = useState<boolean>(true);
-    const [isVideoOn, setIsVideoOn] = useState<boolean>(true);
 
     // browser width - 1024px 
     const oneThousandTwentyFourWidth = 1024;
 
     // router
     const router = useRouter();
-
-    // toggle mic
-    const onToggleMic = () => {
-        if (streamRef.current) {
-            const audioTracks = streamRef.current.getAudioTracks();
-            audioTracks.forEach(track => {
-                track.enabled = !track.enabled;
-            });
-            setIsMicOn(prevState => !prevState);
-        }
-    };
-
-    // toggle video
-    const onToggleVideo = () => {
-        if (streamRef.current) {
-            const videoTracks = streamRef.current.getVideoTracks();
-            videoTracks.forEach(track => {
-                track.enabled = !track.enabled;
-            });
-            setIsVideoOn(prevState => !prevState);
-        }
-    };
 
     // disconnect streaming and go back to main page
     const onDisconnect = () => {

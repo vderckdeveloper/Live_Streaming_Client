@@ -32,6 +32,14 @@ function Stream() {
     // my video status
     const [isOnlyMyVideoAvailable, setIsOnlyMyVideoAvailable] = useState<boolean>(false);
 
+    // option on/off
+    const [isVideoOn, setIsVideoOn] = useState<boolean>(true);
+    const [isMicOn, setIsMicOn] = useState<boolean>(true);
+
+    // video toggle
+    const videoToggleReadyBtn = useRef<boolean>(true);
+    const micToggleReadyBtn = useRef<boolean>(true);
+
     // web socket ref
     const webSocketRef = useRef<Socket | null>(null);
 
@@ -82,10 +90,16 @@ function Stream() {
                 setIsCurrentScreenOff(true);
             }
 
-            // peer connection
-            stream.getTracks().forEach(track => {
-                peerConnections.current.forEach(pc => {
-                    pc.addTrack(track, stream);
+            // Reflect the new stream in peer connections
+            peerConnections.current.forEach((pc) => {
+                pc.getSenders().forEach((sender) => {
+                    if (sender.track?.kind === 'video') {
+                        const newVideoTrack = stream.getVideoTracks()[0];
+                        if (newVideoTrack) sender.replaceTrack(newVideoTrack);
+                    } else if (sender.track?.kind === 'audio') {
+                        const newAudioTrack = stream.getAudioTracks()[0];
+                        if (newAudioTrack) sender.replaceTrack(newAudioTrack);
+                    }
                 });
             });
 
@@ -96,6 +110,177 @@ function Stream() {
             streamRef.current = stream;
         } catch (err) {
             console.error("Error accessing the webcam and microphone: ", err);
+        }
+    };
+
+    // toggle mic
+    const onToggleMic = async () => {
+        // guard clause
+        if (!streamRef.current) return;
+
+        // check if button is ready
+        if (!micToggleReadyBtn.current) return;
+
+        micToggleReadyBtn.current = false;
+
+        // turn off mic
+        if (isMicOn) {
+            // toggle audio track
+            const audioTracks = streamRef.current.getAudioTracks();
+            audioTracks.forEach(track => {
+                track.enabled = false;
+            });
+
+            // Reflect the blank stream in peer connections
+            peerConnections.current.forEach((pc) => {
+                pc.getSenders().forEach((sender) => {
+                    if (sender.track?.kind === 'audio') {
+                        sender.replaceTrack(null); // Stop sending audio
+                    }
+                });
+            });
+
+            // button ready
+            micToggleReadyBtn.current = true;
+
+            // toggle mic
+            setIsMicOn(false);
+        } else {
+            // toggle audio track
+            const audioTracks = streamRef.current.getAudioTracks();
+            audioTracks.forEach(track => {
+                track.enabled = true;
+            });
+
+            // Stop the previous stream if it exists
+            if (streamRef.current) {
+                streamRef.current.getTracks().forEach(track => track.stop());
+            }
+
+            // start webcam stream
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+                // current status off status
+                setIsCurrentScreenOff(true);
+            }
+
+            // Reflect the new stream in peer connections
+            peerConnections.current.forEach((pc) => {
+                pc.getSenders().forEach((sender) => {
+                    if (sender.track?.kind === 'video') {
+                        const newVideoTrack = stream.getVideoTracks()[0];
+                        if (newVideoTrack) sender.replaceTrack(newVideoTrack);
+                    } else if (sender.track?.kind === 'audio') {
+                        const newAudioTrack = stream.getAudioTracks()[0];
+                        if (newAudioTrack) sender.replaceTrack(newAudioTrack);
+                    }
+                });
+            });
+
+            // reflect webcam streaming to the active stream
+            streamRef.current = stream;
+
+            // button ready
+            micToggleReadyBtn.current = true;
+
+            // toggle mic
+            setIsMicOn(true);
+        }
+    };
+
+    // toggle video
+    const onToggleVideo = async () => {
+        // guard clause
+        if (!streamRef.current) return;
+
+        // check if button is ready 
+        if (!videoToggleReadyBtn.current) return;
+
+        videoToggleReadyBtn.current = false;
+
+        // turn off my screen
+        if (isVideoOn) {
+            // blank my video screen
+            const videoTracks = streamRef.current.getVideoTracks();
+            videoTracks.forEach(track => {
+                track.enabled = false;
+            });
+
+            // Create a blank video track using an off-screen canvas
+            const canvas = document.createElement('canvas');
+            canvas.width = 640; // Set desired width
+            canvas.height = 480; // Set desired height
+            const context = canvas.getContext('2d');
+
+            if (context) {
+                context.fillStyle = 'blue';
+                context.fillRect(0, 0, canvas.width, canvas.height);
+            }
+
+            const blankStream = canvas.captureStream();
+            const videoTrack = blankStream.getVideoTracks()[0]; // Get the blank video track
+
+            if (videoRef.current) {
+                videoRef.current.srcObject = blankStream;
+            }
+
+            // Reflect the blank stream in peer connections
+            peerConnections.current.forEach((pc) => {
+                pc.getSenders().forEach((sender) => {
+                    if (sender.track?.kind === 'video') {
+                        sender.replaceTrack(videoTrack);
+                    }
+                });
+            });
+
+            // button ready
+            videoToggleReadyBtn.current = true;
+
+            // video toggle
+            setIsVideoOn(false);
+            // turn on my screen
+        } else {
+            // toggle my video screen
+            const videoTracks = streamRef.current.getVideoTracks();
+            videoTracks.forEach(track => {
+                track.enabled = true;
+            });
+
+            // Stop the previous stream if it exists
+            if (streamRef.current) {
+                streamRef.current.getTracks().forEach(track => track.stop());
+            }
+
+            // start webcam stream
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+                // current status off status
+                setIsCurrentScreenOff(true);
+            }
+
+            // Reflect the new stream in peer connections
+            peerConnections.current.forEach((pc) => {
+                pc.getSenders().forEach((sender) => {
+                    if (sender.track?.kind === 'video') {
+                        const newVideoTrack = stream.getVideoTracks()[0];
+                        if (newVideoTrack) sender.replaceTrack(newVideoTrack);
+                    } else if (sender.track?.kind === 'audio') {
+                        const newAudioTrack = stream.getAudioTracks()[0];
+                        if (newAudioTrack) sender.replaceTrack(newAudioTrack);
+                    }
+                });
+            });
+
+            // reflect webcam streaming to the active stream
+            streamRef.current = stream;
+
+            // button ready
+            videoToggleReadyBtn.current = true;
+
+            // video toggle
+            setIsVideoOn(true);
         }
     };
 
@@ -122,12 +307,19 @@ function Stream() {
                 setIsCurrentScreenOff(false);
             }
 
-            // peer connection
-            combinedStream.getTracks().forEach(track => {
-                peerConnections.current.forEach(pc => {
-                    pc.addTrack(track, combinedStream);
+            // Reflect the new stream in peer connections
+            peerConnections.current.forEach((pc) => {
+                pc.getSenders().forEach((sender) => {
+                    if (sender.track?.kind === 'video') {
+                        const newVideoTrack = combinedStream.getVideoTracks()[0];
+                        if (newVideoTrack) sender.replaceTrack(newVideoTrack);
+                    } else if (sender.track?.kind === 'audio') {
+                        const newAudioTrack = combinedStream.getAudioTracks()[0];
+                        if (newAudioTrack) sender.replaceTrack(newAudioTrack);
+                    }
                 });
             });
+
             // reflect webcam streaming to the active stream
             streamRef.current = combinedStream;
 
@@ -580,10 +772,13 @@ function Stream() {
             <Setting
                 isCurrentScreenOff={isCurrentScreenOff}
                 isScreenRecordingOff={isScreenRecordingOff}
+                isMicOn={isMicOn}
+                isVideoOn={isVideoOn}
+                onToggleVideo={onToggleVideo}
+                onToggleMic={onToggleMic}
                 onShareMyCurrentScreen={onShareMyCurrentScreen}
                 onStartRecordingScreen={onStartRecordingScreen}
                 onStopRecordingScreen={onStopRecordingScreen}
-                refs={refs}
             />
         </>
     )
