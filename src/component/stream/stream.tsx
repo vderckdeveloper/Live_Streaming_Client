@@ -5,7 +5,7 @@ import { io, Socket } from 'socket.io-client';
 
 // component
 import Screen from "./screen";
-import Chat from "./chat";
+import Sidebar from "./sidebar";
 import Setting from "./setting";
 
 // styles
@@ -66,6 +66,9 @@ function Stream() {
     const availableVideoRefs = useMemo(() => {
         return [firstPeerVideoRef, secondPeerVideoRef, thirdPeerVideoRef];
     }, [firstPeerVideoRef, secondPeerVideoRef, thirdPeerVideoRef]);
+
+    // side bar chat ref
+    const sidebarRef = useRef<HTMLElement>(null);
 
     // objectify refs
     const refs: Refs = {
@@ -570,6 +573,13 @@ function Stream() {
         return pc;
     }, [availableVideoRefs]);
 
+    const onSidebarMenuOpen = () => {
+        if(sidebarRef.current) {
+            sidebarRef.current.style.display = 'flex';
+            sidebarRef.current.style.transform = 'translateX(0px)';
+        }
+    }
+
     // start video and signaling communication
     useEffect(() => {
         if (!pathName) return;
@@ -786,10 +796,10 @@ function Stream() {
                     setIsOnlyMyVideoAvailable={setIsOnlyMyVideoAvailable}
                     refs={refs}
                 />
-                <Chat 
+                <Sidebar 
+                    ref={sidebarRef}
                 />
             </section>
-
             <Setting
                 isCurrentScreenOff={isCurrentScreenOff}
                 isScreenRecordingOff={isScreenRecordingOff}
@@ -799,6 +809,7 @@ function Stream() {
                 onToggleMic={onToggleMic}
                 onShareMyCurrentScreen={onShareMyCurrentScreen}
                 onStartRecordingScreen={onStartRecordingScreen}
+                onSidebarMenuOpen={onSidebarMenuOpen}
             />
         </>
     )
