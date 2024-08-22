@@ -3,8 +3,13 @@ import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import { io, Socket } from 'socket.io-client';
 
+// component
 import Screen from "./screen";
+import Chat from "./chat";
 import Setting from "./setting";
+
+// styles
+import styles from '@/styles/stream/stream.module.css';
 
 interface Refs {
     // my side
@@ -362,7 +367,7 @@ function Stream() {
     const onStartRecordingScreen = async (): Promise<void> => {
         // return if mic is muted 
         if (!isMicOn) {
-            alert('음소거 중에는 녹화 공유하실수 없습니다.')
+            alert('음소거 중에는 녹화 하실수 없습니다.')
             return;
         }
 
@@ -774,12 +779,17 @@ function Stream() {
 
     return (
         <>
-            <Screen
-                isMyWebcamLoading={isMyWebcamLoading}
-                isOnlyMyVideoAvailable={isOnlyMyVideoAvailable}
-                setIsOnlyMyVideoAvailable={setIsOnlyMyVideoAvailable}
-                refs={refs}
-            />
+            <section className={styles['frame']}>
+                <Screen
+                    isMyWebcamLoading={isMyWebcamLoading}
+                    isOnlyMyVideoAvailable={isOnlyMyVideoAvailable}
+                    setIsOnlyMyVideoAvailable={setIsOnlyMyVideoAvailable}
+                    refs={refs}
+                />
+                <Chat 
+                />
+            </section>
+
             <Setting
                 isCurrentScreenOff={isCurrentScreenOff}
                 isScreenRecordingOff={isScreenRecordingOff}
