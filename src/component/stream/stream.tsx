@@ -575,8 +575,7 @@ function Stream() {
 
     const onSidebarMenuOpen = () => {
         if(sidebarRef.current) {
-            sidebarRef.current.style.display = 'flex';
-            sidebarRef.current.style.transform = 'translateX(0px)';
+            sidebarRef.current.style.marginRight = '0px';
         }
     }
 
