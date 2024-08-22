@@ -70,6 +70,9 @@ function Stream() {
     // side bar chat ref
     const sidebarRef = useRef<HTMLElement>(null);
 
+    // side bar status
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
     // objectify refs
     const refs: Refs = {
         videoRef,
@@ -576,6 +579,14 @@ function Stream() {
     const onSidebarMenuOpen = () => {
         if(sidebarRef.current) {
             sidebarRef.current.style.marginRight = '0px';
+            setIsSidebarOpen(true);
+        }
+    }
+
+    const onSidebarMenuClose = () => {
+        if(sidebarRef.current) {
+            sidebarRef.current.style.marginRight = '-405px';
+            setIsSidebarOpen(false);
         }
     }
 
@@ -804,11 +815,13 @@ function Stream() {
                 isScreenRecordingOff={isScreenRecordingOff}
                 isMicOn={isMicOn}
                 isVideoOn={isVideoOn}
+                isSidebaropen={isSidebarOpen}
                 onToggleVideo={onToggleVideo}
                 onToggleMic={onToggleMic}
                 onShareMyCurrentScreen={onShareMyCurrentScreen}
                 onStartRecordingScreen={onStartRecordingScreen}
                 onSidebarMenuOpen={onSidebarMenuOpen}
+                onSidebarMenuClose={onSidebarMenuClose}
             />
         </>
     )
