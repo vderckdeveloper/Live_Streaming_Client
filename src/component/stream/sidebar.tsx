@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, forwardRef, RefObject } from 'react';
 import Image from 'next/image';
 import StudySupporterImage from '../../../public/image/test/240822_testBot_Ver2.0.png';
 
-import styles from '@/styles/stream/chat.module.css';
+import styles from '@/styles/stream/sidebar.module.css';
 
 // Define a type for messages
 interface Message {
@@ -11,7 +11,8 @@ interface Message {
     timestamp: string;
 }
 
-function Chat() {
+// eslint-disable-next-line react/display-name
+const Sidebar = forwardRef((_: any, ref: any ) => {
 
     // initial time stamp
     const [initialTimeStamp, setInitialTimeStamp] = useState<string>();
@@ -55,12 +56,12 @@ function Chat() {
     };
 
     // set initial time stamp
-    useEffect(()=>{
+    useEffect(() => {
         setInitialTimeStamp(new Date().toLocaleTimeString());
-    },[]);
+    }, []);
 
     return (
-        <section className={styles['container']}>
+        <section className={styles['container']} ref={ref}>
             <div className={styles['wrapper']}>
                 <article className={styles.aiDialogue}>
                     <div className={styles.aiTalk}>
@@ -124,7 +125,7 @@ function Chat() {
                 </div>
             </div>
         </section>
-    )
-}
+    );
+});
 
-export default Chat;
+export default Sidebar;
