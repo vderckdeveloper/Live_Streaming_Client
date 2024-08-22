@@ -17,9 +17,10 @@ interface ScreenProps {
     onToggleMic: () => void;
     onShareMyCurrentScreen: () => Promise<void>;
     onStartRecordingScreen: () => Promise<void>;
+    onSidebarMenuOpen: () => void;
 }
 
-function Setting({ isCurrentScreenOff, isScreenRecordingOff, isMicOn, isVideoOn, onToggleVideo, onToggleMic, onShareMyCurrentScreen, onStartRecordingScreen }: ScreenProps) {
+function Setting({ isCurrentScreenOff, isScreenRecordingOff, isMicOn, isVideoOn, onToggleVideo, onToggleMic, onShareMyCurrentScreen, onStartRecordingScreen, onSidebarMenuOpen }: ScreenProps) {
 
     // screen resize
     const [browserWidth, setBrowserWidth] = useState<number>();
@@ -180,7 +181,7 @@ function Setting({ isCurrentScreenOff, isScreenRecordingOff, isMicOn, isVideoOn,
                     </div>
                     {/* right setting bar */}
                     <div className={styles['right-setting-bar']}>
-                        <div className={styles['svg-box']}>
+                        <div className={styles['svg-box']} onClick={onSidebarMenuOpen}>
                             <svg xmlns="http://www.w3.org/2000/svg" height="24" width="24" version="1.1" viewBox="0 0 512 512" fill="#ffffff">
                                 <g strokeWidth="0" />
                                 <g strokeLinecap="round" strokeLinejoin="round" />
