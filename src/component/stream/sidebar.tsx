@@ -89,7 +89,6 @@ const Sidebar = forwardRef((_: any, ref: any ) => {
                                 );
                             }
 
-
                             return (
                                 <div key={index} className={styles.userTalk}>
                                     <p>{msg.content}</p>
