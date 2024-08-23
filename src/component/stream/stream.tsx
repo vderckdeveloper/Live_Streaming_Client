@@ -6,6 +6,7 @@ import { io, Socket } from 'socket.io-client';
 // component
 import Screen from "./screen";
 import Sidebar from "./sidebar";
+import SidebarMobile from "./sidebarmobile";
 import Setting from "./setting";
 
 // styles
@@ -67,11 +68,15 @@ function Stream() {
         return [firstPeerVideoRef, secondPeerVideoRef, thirdPeerVideoRef];
     }, [firstPeerVideoRef, secondPeerVideoRef, thirdPeerVideoRef]);
 
-    // side bar chat ref
+    // side bar ref
     const sidebarRef = useRef<HTMLElement>(null);
+
+    // side bar mobile ref 
+    const sidebarMobileRef = useRef<HTMLElement>(null);
 
     // side bar status
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isSidebarMobileOpen, setIsSidebarMobileOpen] = useState(false);
 
     // objectify refs
     const refs: Refs = {
@@ -577,16 +582,30 @@ function Stream() {
     }, [availableVideoRefs]);
 
     const onSidebarMenuOpen = () => {
-        if(sidebarRef.current) {
+        if (sidebarRef.current) {
             sidebarRef.current.style.marginRight = '0px';
             setIsSidebarOpen(true);
         }
     }
 
     const onSidebarMenuClose = () => {
-        if(sidebarRef.current) {
+        if (sidebarRef.current) {
             sidebarRef.current.style.marginRight = '-405px';
             setIsSidebarOpen(false);
+        }
+    }
+
+    const onSidebarMobileMenuOpen = () => {
+        if (sidebarMobileRef.current) {
+            sidebarMobileRef.current.style.transform = 'translateX(0)';
+            setIsSidebarMobileOpen(true);
+        }
+    }
+
+    const onSidebarMobileMenuClose = () => {
+        if (sidebarMobileRef.current) {
+            sidebarMobileRef.current.style.transform = 'translateX(100%)';
+            setIsSidebarMobileOpen(false);
         }
     }
 
@@ -806,8 +825,11 @@ function Stream() {
                     setIsOnlyMyVideoAvailable={setIsOnlyMyVideoAvailable}
                     refs={refs}
                 />
-                <Sidebar 
+                <Sidebar
                     ref={sidebarRef}
+                />
+                <SidebarMobile
+                    ref={sidebarMobileRef}
                 />
             </section>
             <Setting
@@ -816,12 +838,15 @@ function Stream() {
                 isMicOn={isMicOn}
                 isVideoOn={isVideoOn}
                 isSidebaropen={isSidebarOpen}
+                isSidebarMobileOpen={isSidebarMobileOpen}
                 onToggleVideo={onToggleVideo}
                 onToggleMic={onToggleMic}
                 onShareMyCurrentScreen={onShareMyCurrentScreen}
                 onStartRecordingScreen={onStartRecordingScreen}
                 onSidebarMenuOpen={onSidebarMenuOpen}
                 onSidebarMenuClose={onSidebarMenuClose}
+                onSidebarMobileMenuOpen={onSidebarMobileMenuOpen}
+                onSidebarMobileMenuClose={onSidebarMobileMenuClose}
             />
         </>
     )
