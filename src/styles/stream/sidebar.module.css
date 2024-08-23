@@ -1,5 +1,6 @@
 .container {
-    float: right;
+    position: sticky;
+    top: 0;
     display: flex;
     flex-direction: row;
     justify-content: center;
