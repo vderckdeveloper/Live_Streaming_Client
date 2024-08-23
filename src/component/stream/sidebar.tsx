@@ -69,7 +69,7 @@ const Sidebar = forwardRef((_: any, ref: any ) => {
                             <Image src={StudySupporterImage} width={26} height={26} alt='스터디 서포터 AI' />
                         </figure>
                         <div>
-                            <h2>서울 유 에듀 인공지능 학습도우미 입니다. 무엇이든 질문해보세요!</h2>
+                            <h2>채팅방에 입장하셨습니다!</h2>
                             <p>{initialTimeStamp}</p>
                         </div>
                     </div>
