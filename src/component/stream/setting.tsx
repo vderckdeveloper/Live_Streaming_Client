@@ -9,21 +9,27 @@ interface ScreenProps {
     isMicOn: boolean;
     isVideoOn: boolean;
     isSidebaropen: boolean;
+    isSidebarMobileOpen: boolean;
     onToggleVideo: () => void;
     onToggleMic: () => void;
     onShareMyCurrentScreen: () => Promise<void>;
     onStartRecordingScreen: () => Promise<void>;
     onSidebarMenuOpen: () => void;
     onSidebarMenuClose: () => void;
+    onSidebarMobileMenuOpen: () => void;
+    onSidebarMobileMenuClose: () => void;
 }
 
-function Setting({ isCurrentScreenOff, isScreenRecordingOff, isMicOn, isVideoOn, isSidebaropen, onToggleVideo, onToggleMic, onShareMyCurrentScreen, onStartRecordingScreen, onSidebarMenuOpen, onSidebarMenuClose, }: ScreenProps) {
+function Setting({ isCurrentScreenOff, isScreenRecordingOff, isMicOn, isVideoOn, isSidebaropen, isSidebarMobileOpen, onToggleVideo, onToggleMic, onShareMyCurrentScreen, onStartRecordingScreen, onSidebarMenuOpen, onSidebarMenuClose, onSidebarMobileMenuOpen, onSidebarMobileMenuClose }: ScreenProps) {
 
     // screen resize
     const [browserWidth, setBrowserWidth] = useState<number>();
 
     // browser width - 1024px 
     const oneThousandTwentyFourWidth = 1024;
+    
+    // browser width - 540px
+    const fiveHundredsFortyWidth = 540;
 
     // router
     const router = useRouter();
@@ -145,8 +151,9 @@ function Setting({ isCurrentScreenOff, isScreenRecordingOff, isMicOn, isVideoOn,
                                 <path d="M15.5562 14.5477L15.1007 15.0272C15.1007 15.0272 14.0181 16.167 11.0631 13.0559C8.10812 9.94484 9.1907 8.80507 9.1907 8.80507L9.47752 8.50311C10.1841 7.75924 10.2507 6.56497 9.63424 5.6931L8.37326 3.90961C7.61028 2.8305 6.13596 2.68795 5.26145 3.60864L3.69185 5.26114C3.25823 5.71766 2.96765 6.30945 3.00289 6.96594C3.09304 8.64546 3.81071 12.259 7.81536 16.4752C12.0621 20.9462 16.0468 21.1239 17.6763 20.9631C18.1917 20.9122 18.6399 20.6343 19.0011 20.254L20.4217 18.7584C21.3806 17.7489 21.1102 16.0182 19.8833 15.312L17.9728 14.2123C17.1672 13.7486 16.1858 13.8848 15.5562 14.5477Z" fill="#ffffff" />
                             </svg>
                         </div>
+                        {/* side bar for pc below 1024px */}
                         {
-                            browserWidth && (browserWidth < oneThousandTwentyFourWidth)
+                            browserWidth && (browserWidth < oneThousandTwentyFourWidth) && (browserWidth > fiveHundredsFortyWidth)
                             &&
                             <div className={styles['svg-box']} onClick={isSidebaropen ? onSidebarMenuClose : onSidebarMenuOpen}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -157,9 +164,23 @@ function Setting({ isCurrentScreenOff, isScreenRecordingOff, isMicOn, isVideoOn,
                                 </svg>
                             </div>
                         }
+                        {/* side bar for mobile below 540px */}
+                        {
+                               browserWidth && (browserWidth <= fiveHundredsFortyWidth)
+                               &&
+                               <div className={styles['svg-box']} onClick={isSidebarMobileOpen ? onSidebarMobileMenuClose : onSidebarMobileMenuOpen}>
+                                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                       <path d="M12 23C18.0751 23 23 18.0751 23 12C23 5.92487 18.0751 1 12 1C5.92487 1 1 5.92487 1 12C1 13.7596 1.41318 15.4228 2.14781 16.8977C2.34303 17.2897 2.40801 17.7377 2.29483 18.1607L1.63966 20.6093C1.35525 21.6723 2.32772 22.6447 3.39068 22.3603L5.83932 21.7052C6.26233 21.592 6.71033 21.657 7.10228 21.8522C8.5772 22.5868 10.2404 23 12 23Z" fill="#ffffff" />
+                                       <path d="M10.9 12.0004C10.9 12.6079 11.3925 13.1004 12 13.1004C12.6075 13.1004 13.1 12.6079 13.1 12.0004C13.1 11.3929 12.6075 10.9004 12 10.9004C11.3925 10.9004 10.9 11.3929 10.9 12.0004Z" fill="#1C274C" />
+                                       <path d="M6.5 12.0004C6.5 12.6079 6.99249 13.1004 7.6 13.1004C8.20751 13.1004 8.7 12.6079 8.7 12.0004C8.7 11.3929 8.20751 10.9004 7.6 10.9004C6.99249 10.9004 6.5 11.3929 6.5 12.0004Z" fill="#1C274C" />
+                                       <path d="M15.3 12.0004C15.3 12.6079 15.7925 13.1004 16.4 13.1004C17.0075 13.1004 17.5 12.6079 17.5 12.0004C17.5 11.3929 17.0075 10.9004 16.4 10.9004C15.7925 10.9004 15.3 11.3929 15.3 12.0004Z" fill="#1C274C" />
+                                   </svg>
+                               </div>
+                        }
                     </div>
                     {/* right setting bar */}
                     <div className={styles['right-setting-bar']}>
+                        {/* side bar for pc */}
                         <div className={styles['svg-box']} onClick={isSidebaropen ? onSidebarMenuClose : onSidebarMenuOpen}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                                 <path d="M12 23C18.0751 23 23 18.0751 23 12C23 5.92487 18.0751 1 12 1C5.92487 1 1 5.92487 1 12C1 13.7596 1.41318 15.4228 2.14781 16.8977C2.34303 17.2897 2.40801 17.7377 2.29483 18.1607L1.63966 20.6093C1.35525 21.6723 2.32772 22.6447 3.39068 22.3603L5.83932 21.7052C6.26233 21.592 6.71033 21.657 7.10228 21.8522C8.5772 22.5868 10.2404 23 12 23Z" fill="#ffffff" />
