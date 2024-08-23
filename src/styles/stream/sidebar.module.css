@@ -262,3 +262,10 @@
         max-height: 500px;
     }
 }
+
+@media all and (max-width:540px) {
+    /* hide side bar in mobile */
+    .container {
+        display: none;
+    }
+}
