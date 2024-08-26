@@ -12,7 +12,7 @@ interface Message {
 }
 
 // eslint-disable-next-line react/display-name
-const SidebarMobile = forwardRef((_: any, ref: any ) => {
+const SidebarMobile = forwardRef((_: any, ref: any) => {
 
     // initial time stamp
     const [initialTimeStamp, setInitialTimeStamp] = useState<string>();
@@ -44,7 +44,7 @@ const SidebarMobile = forwardRef((_: any, ref: any ) => {
             event.preventDefault();
 
             // exit if user input does not exist
-            if (!userInput || userInput.trim().length === 0) {
+            if (!userInput || userInput === '' || userInput.trim().length === 0) {
                 return;
             }
 
@@ -52,6 +52,15 @@ const SidebarMobile = forwardRef((_: any, ref: any ) => {
             if (responseWaiting.current) {
                 return;
             }
+
+            // Add user's message
+            const newUserMessage: Message = {
+                role: 'user',
+                content: userInput,
+                timestamp: new Date().toLocaleTimeString(),
+            };
+
+            setMessages(prevMessages => [...prevMessages, newUserMessage]);
         }
     };
 

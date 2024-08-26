@@ -12,7 +12,7 @@ interface Message {
 }
 
 // eslint-disable-next-line react/display-name
-const Sidebar = forwardRef((_: any, ref: any ) => {
+const Sidebar = forwardRef((_: any, ref: any) => {
 
     // initial time stamp
     const [initialTimeStamp, setInitialTimeStamp] = useState<string>();
@@ -25,9 +25,6 @@ const Sidebar = forwardRef((_: any, ref: any ) => {
 
     // ai loading dot
     const [aILoadingDot, setAILoadingDot] = useState<boolean>(false);
-
-    // response waiting
-    const responseWaiting = useRef<boolean>(false);
 
     // scroll to bottom ref
     const scrollToBottomRef = useRef<HTMLDivElement>(null);
@@ -44,14 +41,19 @@ const Sidebar = forwardRef((_: any, ref: any ) => {
             event.preventDefault();
 
             // exit if user input does not exist
-            if (!userInput || userInput.trim().length === 0) {
+            if (!userInput || userInput === '' || userInput.trim().length === 0) {
                 return;
             }
 
-            // exit if response waiting is true
-            if (responseWaiting.current) {
-                return;
-            }
+            // Add user's message
+            const newUserMessage: Message = {
+                role: 'user',
+                content: userInput,
+                timestamp: new Date().toLocaleTimeString(),
+            };
+
+            // set user message
+            setMessages(prevMessages => [...prevMessages, newUserMessage]);
         }
     };
 
