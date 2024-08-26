@@ -784,6 +784,24 @@ function Stream() {
                 console.error("Socket.IO connection error: ", error);
             });
 
+            // websocket - room errors
+            webSocketRef.current.on('room_error', (errorData) => {
+                // status code
+                const { statusCode } = errorData;
+
+                // console error
+                console.error('room Error:', errorData);
+
+                // redirect if the room is full
+                if(statusCode === 403) {
+                    alert('채팅방 입장 인원은 최대 4명까지 입니다. 나중에 다시 시도해주세요.');
+                    window.location.href = '/';
+                    // for other room error, show default warning message
+                } else {
+                    alert('채팅방 입장에 실패하셨습니다. 나중에 다시 시도해주세요.');
+                }
+            });
+
             // webscoket - connection close
             webSocketRef.current.on('disconnect', () => {
                 console.log("Socket.IO connection closed.");
