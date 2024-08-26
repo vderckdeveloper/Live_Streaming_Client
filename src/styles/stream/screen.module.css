@@ -98,6 +98,7 @@
 
 /* screen */
 .screen {
+    position: relative;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -124,17 +125,20 @@
 }
 
 .video-text {
-    margin-top: 30px;
+    position: absolute;
+    top: 0;
+    left: 0;
     padding: 15px 20px;
     font-weight: 700;
-    font-size: 24px;
-    border-radius: 8px;
-    background-color: #1a73e8;
+    font-size: 20px;
+    border-radius: 6px;
+    background-color: rgba(0, 0, 0, 0.6);
     color: #ffffff;
 }
 
 /* my only screen */
 .my-only-screen-wrapper {
+    position: relative;
     display: flex;
     flex-wrap: wrap;
     gap: 40px;
