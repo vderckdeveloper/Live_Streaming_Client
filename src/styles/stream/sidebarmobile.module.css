@@ -33,6 +33,7 @@
     margin: 20px 0 40px 0;
     padding: 10px;
     width: 100%;
+    height: calc(100% - 240px);
     color: black;
     font-size: 24px;
     overflow-x: hidden;
@@ -260,15 +261,16 @@
     }
 }
 
-@media all and (max-width:1080px) {
-    .wrapper > .aiDialogue {
-        max-height: 500px;
-    }
-}
-
 /* show in sidebar */
 @media all and (max-width: 540px) {
     .container {
         display: flex;
+    }
+}
+
+@media all and (max-width: 378px) {
+    .container {
+        width: 100%;
+        min-width: 280px;
     }
 }
