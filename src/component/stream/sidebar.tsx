@@ -54,6 +54,9 @@ const Sidebar = forwardRef((_: any, ref: any) => {
 
             // set user message
             setMessages(prevMessages => [...prevMessages, newUserMessage]);
+
+            // set user input to default
+            setUserInput('');
         }
     };
 
