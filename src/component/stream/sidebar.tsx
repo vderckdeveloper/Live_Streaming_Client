@@ -315,7 +315,7 @@ const Sidebar = forwardRef((_: any, ref: any) => {
                                             <span className={styles['loadingDot']}></span>
                                             <span className={styles['loadingDot']}></span>
                                         </h2>
-                                        <p>{msg.timeStamp}</p>
+                                        <p>{msg.timestamp}</p>
                                     </div>
                                     <h5>{msg.userId}</h5>
                                 </div>
