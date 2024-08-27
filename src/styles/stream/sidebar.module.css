@@ -112,7 +112,7 @@
 
 .wrapper > .otherDialogue > .otherTalk > h5 {
     position: absolute;
-    top: 2px;
+    bottom: 32px;
     left: 2px;
     font-weight: 500;
     font-size: 14px;
@@ -122,10 +122,7 @@
 /* loading other talk */
 .wrapper > .otherDialogue > .loadingOtherTalk {
     height: 48px;
-}
-
-.wrapper > .otherDialogue > .loadingOtherTalk > h5 {
-    top: 2px;
+    min-height: 48px;
 }
 
 /* loading dot */
