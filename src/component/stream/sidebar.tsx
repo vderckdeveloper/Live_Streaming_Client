@@ -8,9 +8,16 @@ import styles from '@/styles/stream/sidebar.module.css';
 
 // Define a type for messages
 interface Message {
+    userId?: string,
     role: 'me' | 'other';
     content: string;
     timestamp: string;
+}
+
+interface LoadingMessage {
+    userId: string,
+    isMessageWriting: boolean,
+    timestamp: string,
 }
 
 // Debounce function
@@ -72,6 +79,9 @@ const Sidebar = forwardRef((_: any, ref: any) => {
     const [peaceLoadingDot, setPeaceLoadingDot] = useState<boolean>(false);
     const [smileLoadingdot, setSmileLoadingDot] = useState<boolean>(false);
 
+    // loading message
+    const [loadingMessages, setLoadingMessages] = useState<LoadingMessage[]>([]);
+
     // web socket ref
     const webSocketRef = useRef<Socket | null>(null);
 
@@ -86,7 +96,6 @@ const Sidebar = forwardRef((_: any, ref: any) => {
     const debouncedEmit = useMemo(() => debounce((status: any) => {
         if (webSocketRef.current) {
             webSocketRef.current.emit('isMessageWriting', status);
-            console.log(status);
         }
     }, 200), []);
 
@@ -197,22 +206,36 @@ const Sidebar = forwardRef((_: any, ref: any) => {
         webSocketRef.current.on('isMessageWriting', (messageWritingStatus) => {
             const userId = messageWritingStatus.userId;
             const isMessageWriting = messageWritingStatus.isMessageWriting;
+            const timeStamp = messageWritingStatus.register_date;
 
-            // reflect message writing status
-            switch (userId) {
-                case '희망':
-                    setHopeLoadingDot(isMessageWriting);
-                    break;
-                case '행복':
-                    setHappinessLoading(isMessageWriting);
-                    break;
-                case '평화':
-                    setPeaceLoadingDot(isMessageWriting);
-                    break;
-                case '미소':
-                    setSmileLoadingDot(isMessageWriting);
-                    break;
-            }
+            const formattedTimeStamp = formatServerTimeDate(timeStamp);
+
+            console.log('message writing status', isMessageWriting);
+
+            // update loading message
+            setLoadingMessages(prevMessages => {
+                // Check if there's already a message with the same userId
+                const messageExists = prevMessages.some(message => message.userId === userId);
+
+                // If the message is a "writing" status message and there's no existing message with the same userId
+                if (isMessageWriting && !messageExists) {
+                    // Add the new message
+                    return [
+                        ...prevMessages,
+                        {
+                            userId: userId,
+                            isMessageWriting: isMessageWriting,
+                            timestamp: formattedTimeStamp,
+                        }
+                    ];
+                } else if (!isMessageWriting) {
+                    // If the message is not a "writing" status, remove any existing message from the user
+                    return prevMessages.filter(message => message.userId !== userId);
+                }
+
+                // If there's already a message with the same userId, return prevMessages unchanged
+                return prevMessages;
+            });
         });
 
         webSocketRef.current.on('auth_error', (error) => {
@@ -275,87 +298,36 @@ const Sidebar = forwardRef((_: any, ref: any) => {
                                     <p>{msg.content}</p>
                                 </div>
                             );
-
                         })
                     }
-                    {/* other talk loading dot */}
+                    {/* other loading dot */}
                     {
-                        hopeLoadingDot
-                        &&
-                        <div className={styles.otherTalk}>
-                            <figure>
-                                <Image src={StudySupporterImage} width={26} height={26} alt='스터디 서포터 AI' />
-                            </figure>
-                            <div>
-                                <h2>
-                                    <span className={styles['loadingDot']}></span>
-                                    <span className={styles['loadingDot']}></span>
-                                    <span className={styles['loadingDot']}></span>
-                                </h2>
-                                <p>{new Date().toLocaleTimeString()}</p>
-                            </div>
-                            <h5>희망</h5>
-                        </div>
-                    }
-                    {
-                        happinessLoadingDot
-                        &&
-                        <div className={`${styles['otherTalk']} ${styles['loadingOtherTalk']}`}>
-                            <figure>
-                                <Image src={StudySupporterImage} width={26} height={26} alt='스터디 서포터 AI' />
-                            </figure>
-                            <div>
-                                <h2>
-                                    <span className={styles['loadingDot']}></span>
-                                    <span className={styles['loadingDot']}></span>
-                                    <span className={styles['loadingDot']}></span>
-                                </h2>
-                                <p>{new Date().toLocaleTimeString()}</p>
-                            </div>
-                            <h5>행복</h5>
-                        </div>
-                    }
-                    {
-                        peaceLoadingDot
-                        &&
-                        <div className={`${styles['otherTalk']} ${styles['loadingOtherTalk']}`}>
-                            <figure>
-                                <Image src={StudySupporterImage} width={26} height={26} alt='스터디 서포터 AI' />
-                            </figure>
-                            <div>
-                                <h2>
-                                    <span className={styles['loadingDot']}></span>
-                                    <span className={styles['loadingDot']}></span>
-                                    <span className={styles['loadingDot']}></span>
-                                </h2>
-                                <p>{new Date().toLocaleTimeString()}</p>
-                            </div>
-                            <h5>평화</h5>
-                        </div>
-                    }
-                    {
-                        smileLoadingdot
-                        &&
-                        <div className={`${styles['otherTalk']} ${styles['loadingOtherTalk']}`}>
-                            <figure>
-                                <Image src={StudySupporterImage} width={26} height={26} alt='스터디 서포터 AI' />
-                            </figure>
-                            <div>
-                                <h2>
-                                    <span className={styles['loadingDot']}></span>
-                                    <span className={styles['loadingDot']}></span>
-                                    <span className={styles['loadingDot']}></span>
-                                </h2>
-                                <p>{new Date().toLocaleTimeString()}</p>
-                            </div>
-                            <h5>미소</h5>
-                        </div>
+                        loadingMessages.map((msg: any, index: any) => {
+
+                            return (
+                                <div key={index} className={`${styles['otherTalk']} ${styles['loadingOtherTalk']}`}>
+                                    <figure>
+                                        <Image src={StudySupporterImage} width={26} height={26} alt='스터디 서포터 AI' />
+                                    </figure>
+                                    <div>
+                                        <h2>
+                                            <span className={styles['loadingDot']}></span>
+                                            <span className={styles['loadingDot']}></span>
+                                            <span className={styles['loadingDot']}></span>
+                                        </h2>
+                                        <p>{msg.timeStamp}</p>
+                                    </div>
+                                    <h5>{msg.userId}</h5>
+                                </div>
+                            );
+
+                        })
                     }
                     {/* me loading dot */}
                     {
                         meLoadingDot
                         &&
-                        <div className={`${styles['otherTalk']} ${styles['loadingOtherTalk']}`}>
+                        <div className={styles['meTalk']}>
                             <span className={styles['loadingDot']}></span>
                             <span className={styles['loadingDot']}></span>
                             <span className={styles['loadingDot']}></span>
