@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect, forwardRef, RefObject } from 'react';
+import React, { useState, useRef, useEffect, forwardRef } from 'react';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { io, Socket } from 'socket.io-client';
 import StudySupporterImage from '../../../public/image/test/240822_testBot_Ver2.0.png';
 
@@ -65,6 +66,9 @@ const Sidebar = forwardRef((_: any, ref: any) => {
     // scroll to user input ref
     const scrollToUserInputRef = useRef<HTMLTextAreaElement>(null);
 
+     // path name
+     const pathName = usePathname();
+
     const onUserInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         setUserInput(event.target.value);
     };
@@ -100,6 +104,12 @@ const Sidebar = forwardRef((_: any, ref: any) => {
 
     // connect web socket
     useEffect(() => {
+        if (!pathName) return;
+
+         // room code from the path
+         const roomCode = pathName.split('/')[2];
+         if (!roomCode) return;
+
         // Connect to the WebSocket server
         webSocketRef.current = io(`${process.env.NEXT_PUBLIC_DIRECT_CHAT_URL}/websocket/chat`, {
             withCredentials: true,
@@ -112,12 +122,7 @@ const Sidebar = forwardRef((_: any, ref: any) => {
         // Event listener for successful connection
         webSocketRef.current.on('connect', () => {
             console.log('WebSocket Chat Connected!');
-
-            const role = {
-                role: 'user',
-            }
-    
-            webSocketRef.current?.emit('register', role);
+            webSocketRef.current?.emit('register', roomCode);
         });
 
         // Event listener for receiving messages
@@ -168,7 +173,7 @@ const Sidebar = forwardRef((_: any, ref: any) => {
         return () => {
             webSocketRef.current?.disconnect();
         };
-    }, []);
+    }, [pathName]);
 
     return (
         <section className={styles['container']} ref={ref}>
@@ -182,6 +187,7 @@ const Sidebar = forwardRef((_: any, ref: any) => {
                             <h2>채팅방에 입장하셨습니다!</h2>
                             <p>{initialTimeStamp}</p>
                         </div>
+                        <h5>희망</h5>
                     </div>
                     {
                         messages.map((msg: any, index: any) => {
