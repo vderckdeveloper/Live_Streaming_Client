@@ -120,8 +120,18 @@
 }
 
 /* loading other talk */
+.wrapper > .otherDialogue > .loadingOtherTalk {
+    height: 48px;
+}
+
+.wrapper > .otherDialogue > .loadingOtherTalk > div {
+    position: absolute;
+    top: 0;
+    left: 35px;
+}
+
 .wrapper > .otherDialogue > .loadingOtherTalk > h5 {
-    top: -2px;
+    top: 2px;
 }
 
 /* loading dot */
