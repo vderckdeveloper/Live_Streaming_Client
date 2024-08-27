@@ -121,25 +121,6 @@ const Sidebar = forwardRef((_: any, ref: any) => {
         });
 
         // Event listener for receiving messages
-        webSocketRef.current.on('newFile', (message) => {
-            const role = message.role;
-            const type = message.type;
-            const content = message.message;
-            const downloadLink = message.downloadLink;
-            const timeStamp = message.register_date;
-
-            const formattedTimeStamp = formatServerTimeDate(timeStamp);
-
-            setMessages(prevMessages => [...prevMessages, {
-                role: role,
-                type: type,
-                content: content,
-                downloadLink: downloadLink,
-                timestamp: formattedTimeStamp,
-            }]);
-        });
-
-        // Event listener for receiving messages
         webSocketRef.current.on('newMessage', (message) => {
             const role = message.role;
             const type = message.type;
@@ -159,7 +140,7 @@ const Sidebar = forwardRef((_: any, ref: any) => {
         // Event listener for isMessageWriting 
         webSocketRef.current.on('isMessageWriting', (messageWritingStatus) => {
             if (messageWritingStatus) {
-
+                
             }
         });
 
