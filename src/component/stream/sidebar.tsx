@@ -60,10 +60,6 @@ const formatServerTimeDate = (dateFromServer: string) => {
 
 // eslint-disable-next-line react/display-name
 const Sidebar = forwardRef((_: any, ref: any) => {
-
-    // initial time stamp
-    const [initialTimeStamp, setInitialTimeStamp] = useState<string>();
-
     // user input
     const [userInput, setUserInput] = useState<string>('');
 
@@ -72,12 +68,6 @@ const Sidebar = forwardRef((_: any, ref: any) => {
 
     // me loading dot
     const [meLoadingDot, setMeLoadingDot] = useState(false);
-
-    // other loading dot
-    const [hopeLoadingDot, setHopeLoadingDot] = useState<boolean>(false);
-    const [happinessLoadingDot, setHappinessLoading] = useState<boolean>(false);
-    const [peaceLoadingDot, setPeaceLoadingDot] = useState<boolean>(false);
-    const [smileLoadingdot, setSmileLoadingDot] = useState<boolean>(false);
 
     // loading message
     const [loadingMessages, setLoadingMessages] = useState<LoadingMessage[]>([]);
@@ -118,7 +108,7 @@ const Sidebar = forwardRef((_: any, ref: any) => {
     };
 
     const onSend = (event: React.KeyboardEvent<HTMLTextAreaElement> | React.MouseEvent<HTMLButtonElement>) => {
-        if (event.type === 'click' || (event.type === 'keydown' && (event as React.KeyboardEvent).key === 'Enter')) {
+        if (event.type === 'click' || (event.type === 'keydown' && (event as React.KeyboardEvent).key === 'Enter' && (event as React.KeyboardEvent).ctrlKey)) {
             event.preventDefault();
 
             // exit if user input does not exist
@@ -147,7 +137,7 @@ const Sidebar = forwardRef((_: any, ref: any) => {
             webSocketRef.current?.emit('newMessage', otherMessage);
 
             // emit message writing status
-            webSocketRef.current?.emit('isMessageWriting', false);
+            debouncedEmit(false);
 
             // set user input to default
             setUserInput('');
@@ -156,11 +146,6 @@ const Sidebar = forwardRef((_: any, ref: any) => {
             setMeLoadingDot(false);
         }
     };
-
-    // set initial time stamp
-    useEffect(() => {
-        setInitialTimeStamp(new Date().toLocaleTimeString());
-    }, []);
 
     // connect web socket
     useEffect(() => {
@@ -270,17 +255,17 @@ const Sidebar = forwardRef((_: any, ref: any) => {
         if (!scrollToBottomRef.current) return;
 
         scrollToBottomRef.current.scrollIntoView({ behavior: 'smooth' });
-    }, [messages, meLoadingDot, hopeLoadingDot, happinessLoadingDot, peaceLoadingDot, smileLoadingdot]);
+    }, [messages, meLoadingDot, loadingMessages]);
 
     return (
         <section className={styles['container']} ref={ref}>
             <div className={styles['wrapper']}>
-                <article className={styles.otherDialogue}>
+                <article className={styles['otherDialogue']}>
                     {
                         messages.map((msg: any, index: any) => {
                             if (msg.role === 'other') {
                                 return (
-                                    <div key={index} className={styles.otherTalk}>
+                                    <div key={index} className={styles['otherTalk']}>
                                         <figure>
                                             <Image src={StudySupporterImage} width={26} height={26} alt='스터디 서포터 AI' />
                                         </figure>
@@ -294,7 +279,7 @@ const Sidebar = forwardRef((_: any, ref: any) => {
                             }
 
                             return (
-                                <div key={index} className={styles.meTalk}>
+                                <div key={index} className={styles['meTalk']}>
                                     <p>{msg.content}</p>
                                 </div>
                             );
@@ -337,7 +322,7 @@ const Sidebar = forwardRef((_: any, ref: any) => {
                     <div ref={scrollToBottomRef} />
                 </article>
                 <div className={styles.aiInput}>
-                    <textarea maxLength={100} value={userInput} onChange={onUserInput} placeholder='메세지를 입력해보세요' onKeyDown={onSend} />
+                    <textarea maxLength={100} value={userInput} onChange={onUserInput} placeholder='CTRL + ENTER 를 눌러주세요!' onKeyDown={onSend} />
                     <button type='button' onClick={onSend}>전송</button>
                 </div>
             </div>
