@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, forwardRef } from 'react';
+import React, { useState, useRef, useEffect, forwardRef, useMemo } from 'react';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { io, Socket } from 'socket.io-client';
@@ -8,10 +8,19 @@ import styles from '@/styles/stream/sidebar.module.css';
 
 // Define a type for messages
 interface Message {
-    role: 'user' | 'assistant';
+    role: 'me' | 'other';
     content: string;
     timestamp: string;
 }
+
+// Debounce function
+const debounce = <T extends (...args: any[]) => void>(func: T, delay: number): (...args: Parameters<T>) => void => {
+    let debounceTimer: NodeJS.Timeout;
+    return function (this: void, ...args: Parameters<T>) {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => func.apply(this, args), delay);
+    };
+};
 
 // format server time
 const formatServerTimeDate = (dateFromServer: string) => {
@@ -54,8 +63,14 @@ const Sidebar = forwardRef((_: any, ref: any) => {
     // message
     const [messages, setMessages] = useState<Message[]>([]);
 
-    // ai loading dot
-    const [aILoadingDot, setAILoadingDot] = useState<boolean>(false);
+    // me loading dot
+    const [meLoadingDot, setMeLoadingDot] = useState(false);
+
+    // other loading dot
+    const [hopeLoadingDot, setHopeLoadingDot] = useState<boolean>(false);
+    const [happinessLoadingDot, setHappinessLoading] = useState<boolean>(false);
+    const [peaceLoadingDot, setPeaceLoadingDot] = useState<boolean>(false);
+    const [smileLoadingdot, setSmileLoadingDot] = useState<boolean>(false);
 
     // web socket ref
     const webSocketRef = useRef<Socket | null>(null);
@@ -63,14 +78,34 @@ const Sidebar = forwardRef((_: any, ref: any) => {
     // scroll to bottom ref
     const scrollToBottomRef = useRef<HTMLDivElement>(null);
 
-    // scroll to user input ref
-    const scrollToUserInputRef = useRef<HTMLTextAreaElement>(null);
+    // path name
+    const pathName = usePathname();
 
-     // path name
-     const pathName = usePathname();
+
+    // Debounced functions for true and false statuses
+    const debouncedEmit = useMemo(() => debounce((status: any) => {
+        if (webSocketRef.current) {
+            webSocketRef.current.emit('isMessageWriting', status);
+            console.log(status);
+        }
+    }, 200), []);
 
     const onUserInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setUserInput(event.target.value);
+        const userInput = event.target.value;
+        setUserInput(userInput);
+
+        if (!webSocketRef.current) return;
+
+        // emit message writing status
+        if (userInput && userInput !== '') {
+            const messageWritingStatus = true;
+            setMeLoadingDot(messageWritingStatus);
+            debouncedEmit(messageWritingStatus);
+        } else {
+            const messageWritingStatus = false;
+            setMeLoadingDot(messageWritingStatus);
+            debouncedEmit(messageWritingStatus);
+        }
     };
 
     const onSend = (event: React.KeyboardEvent<HTMLTextAreaElement> | React.MouseEvent<HTMLButtonElement>) => {
@@ -83,17 +118,33 @@ const Sidebar = forwardRef((_: any, ref: any) => {
             }
 
             // Add user's message
-            const newUserMessage: Message = {
-                role: 'user',
+            const myMessage: Message = {
+                role: 'me',
                 content: userInput,
                 timestamp: new Date().toLocaleTimeString(),
             };
 
             // set user message
-            setMessages(prevMessages => [...prevMessages, newUserMessage]);
+            setMessages(prevMessages => [...prevMessages, myMessage]);
+
+            // Add sending message
+            const otherMessage: Message = {
+                role: 'other',
+                content: userInput,
+                timestamp: new Date().toLocaleTimeString(),
+            };
+
+            // emit message
+            webSocketRef.current?.emit('newMessage', otherMessage);
+
+            // emit message writing status
+            webSocketRef.current?.emit('isMessageWriting', false);
 
             // set user input to default
             setUserInput('');
+
+            // set me loading dot false
+            setMeLoadingDot(false);
         }
     };
 
@@ -106,9 +157,9 @@ const Sidebar = forwardRef((_: any, ref: any) => {
     useEffect(() => {
         if (!pathName) return;
 
-         // room code from the path
-         const roomCode = pathName.split('/')[2];
-         if (!roomCode) return;
+        // room code from the path
+        const roomCode = pathName.split('/')[2];
+        if (!roomCode) return;
 
         // Connect to the WebSocket server
         webSocketRef.current = io(`${process.env.NEXT_PUBLIC_DIRECT_CHAT_URL}/websocket/chat`, {
@@ -127,16 +178,16 @@ const Sidebar = forwardRef((_: any, ref: any) => {
 
         // Event listener for receiving messages
         webSocketRef.current.on('newMessage', (message) => {
+            const userId = message.userId;
             const role = message.role;
-            const type = message.type;
-            const content = message.message;
+            const content = message.content;
             const timeStamp = message.register_date;
 
             const formattedTimeStamp = formatServerTimeDate(timeStamp);
 
             setMessages(prevMessages => [...prevMessages, {
+                userId: userId,
                 role: role,
-                type: type,
                 content: content,
                 timestamp: formattedTimeStamp,
             }]);
@@ -144,8 +195,23 @@ const Sidebar = forwardRef((_: any, ref: any) => {
 
         // Event listener for isMessageWriting 
         webSocketRef.current.on('isMessageWriting', (messageWritingStatus) => {
-            if (messageWritingStatus) {
-                
+            const userId = messageWritingStatus.userId;
+            const isMessageWriting = messageWritingStatus.isMessageWriting;
+
+            // reflect message writing status
+            switch (userId) {
+                case '희망':
+                    setHopeLoadingDot(isMessageWriting);
+                    break;
+                case '행복':
+                    setHappinessLoading(isMessageWriting);
+                    break;
+                case '평화':
+                    setPeaceLoadingDot(isMessageWriting);
+                    break;
+                case '미소':
+                    setSmileLoadingDot(isMessageWriting);
+                    break;
             }
         });
 
@@ -175,25 +241,23 @@ const Sidebar = forwardRef((_: any, ref: any) => {
         };
     }, [pathName]);
 
+    // scroll down to bottom whenever messages and creatorLoadingDot are added
+    useEffect(() => {
+        if (messages.length === 0) return;
+        if (!scrollToBottomRef.current) return;
+
+        scrollToBottomRef.current.scrollIntoView({ behavior: 'smooth' });
+    }, [messages, meLoadingDot, hopeLoadingDot, happinessLoadingDot, peaceLoadingDot, smileLoadingdot]);
+
     return (
         <section className={styles['container']} ref={ref}>
             <div className={styles['wrapper']}>
-                <article className={styles.aiDialogue}>
-                    <div className={styles.aiTalk}>
-                        <figure>
-                            <Image src={StudySupporterImage} width={26} height={26} alt='스터디 서포터 AI' />
-                        </figure>
-                        <div>
-                            <h2>채팅방에 입장하셨습니다!</h2>
-                            <p>{initialTimeStamp}</p>
-                        </div>
-                        <h5>희망</h5>
-                    </div>
+                <article className={styles.otherDialogue}>
                     {
                         messages.map((msg: any, index: any) => {
-                            if (msg.role === 'assistant') {
+                            if (msg.role === 'other') {
                                 return (
-                                    <div key={index} className={styles.aiTalk}>
+                                    <div key={index} className={styles.otherTalk}>
                                         <figure>
                                             <Image src={StudySupporterImage} width={26} height={26} alt='스터디 서포터 AI' />
                                         </figure>
@@ -201,41 +265,107 @@ const Sidebar = forwardRef((_: any, ref: any) => {
                                             <h2>{msg.content}</h2>
                                             <p>{msg.timestamp}</p>
                                         </div>
+                                        <h5>{msg.userId}</h5>
                                     </div>
                                 );
                             }
 
                             return (
-                                <div key={index} className={styles.userTalk}>
+                                <div key={index} className={styles.meTalk}>
                                     <p>{msg.content}</p>
                                 </div>
                             );
 
                         })
                     }
-                    {/* ai talk loading */}
+                    {/* other talk loading dot */}
                     {
-                        aILoadingDot
+                        hopeLoadingDot
                         &&
-                        <div className={styles.aiTalk}>
+                        <div className={styles.otherTalk}>
                             <figure>
                                 <Image src={StudySupporterImage} width={26} height={26} alt='스터디 서포터 AI' />
                             </figure>
                             <div>
                                 <h2>
-                                    <span className={styles.loadingDot}></span>
-                                    <span className={styles.loadingDot}></span>
-                                    <span className={styles.loadingDot}></span>
+                                    <span className={styles['loadingDot']}></span>
+                                    <span className={styles['loadingDot']}></span>
+                                    <span className={styles['loadingDot']}></span>
                                 </h2>
                                 <p>{new Date().toLocaleTimeString()}</p>
                             </div>
+                            <h5>희망</h5>
+                        </div>
+                    }
+                    {
+                        happinessLoadingDot
+                        &&
+                        <div className={`${styles['otherTalk']} ${styles['loadingOtherTalk']}`}>
+                            <figure>
+                                <Image src={StudySupporterImage} width={26} height={26} alt='스터디 서포터 AI' />
+                            </figure>
+                            <div>
+                                <h2>
+                                    <span className={styles['loadingDot']}></span>
+                                    <span className={styles['loadingDot']}></span>
+                                    <span className={styles['loadingDot']}></span>
+                                </h2>
+                                <p>{new Date().toLocaleTimeString()}</p>
+                            </div>
+                            <h5>행복</h5>
+                        </div>
+                    }
+                    {
+                        peaceLoadingDot
+                        &&
+                        <div className={`${styles['otherTalk']} ${styles['loadingOtherTalk']}`}>
+                            <figure>
+                                <Image src={StudySupporterImage} width={26} height={26} alt='스터디 서포터 AI' />
+                            </figure>
+                            <div>
+                                <h2>
+                                    <span className={styles['loadingDot']}></span>
+                                    <span className={styles['loadingDot']}></span>
+                                    <span className={styles['loadingDot']}></span>
+                                </h2>
+                                <p>{new Date().toLocaleTimeString()}</p>
+                            </div>
+                            <h5>평화</h5>
+                        </div>
+                    }
+                    {
+                        smileLoadingdot
+                        &&
+                        <div className={`${styles['otherTalk']} ${styles['loadingOtherTalk']}`}>
+                            <figure>
+                                <Image src={StudySupporterImage} width={26} height={26} alt='스터디 서포터 AI' />
+                            </figure>
+                            <div>
+                                <h2>
+                                    <span className={styles['loadingDot']}></span>
+                                    <span className={styles['loadingDot']}></span>
+                                    <span className={styles['loadingDot']}></span>
+                                </h2>
+                                <p>{new Date().toLocaleTimeString()}</p>
+                            </div>
+                            <h5>미소</h5>
+                        </div>
+                    }
+                    {/* me loading dot */}
+                    {
+                        meLoadingDot
+                        &&
+                        <div className={`${styles['otherTalk']} ${styles['loadingOtherTalk']}`}>
+                            <span className={styles['loadingDot']}></span>
+                            <span className={styles['loadingDot']}></span>
+                            <span className={styles['loadingDot']}></span>
                         </div>
                     }
                     {/* bottom scroll target */}
                     <div ref={scrollToBottomRef} />
                 </article>
                 <div className={styles.aiInput}>
-                    <textarea maxLength={100} value={userInput} onChange={onUserInput} placeholder='메세지를 입력해보세요' onKeyDown={onSend} ref={scrollToUserInputRef} />
+                    <textarea maxLength={100} value={userInput} onChange={onUserInput} placeholder='메세지를 입력해보세요' onKeyDown={onSend} />
                     <button type='button' onClick={onSend}>전송</button>
                 </div>
             </div>
