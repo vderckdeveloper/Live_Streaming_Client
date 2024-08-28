@@ -2,7 +2,10 @@ import React, { useState, useRef, useEffect, forwardRef, useMemo } from 'react';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { io, Socket } from 'socket.io-client';
-import StudySupporterImage from '../../../public/image/test/240822_testBot_Ver2.0.png';
+import HopeIconImage from '../../../public/image/sidebar/240828_HopeIcon_Ver1.0.png';
+import HappinessIconImage from '../../../public/image/sidebar/240828_HappinessIcon_Ver1.0.png';
+import PeaceIconImage from '../../../public/image/sidebar/240828_PeaceIcon_Ver1.0.png';
+import SmileIconImage from '../../../public/image/sidebar/240828_SmileIcon_Ver1.0.png';
 
 import styles from '@/styles/stream/sidebar.module.css';
 
@@ -60,6 +63,31 @@ const formatServerTimeDate = (dateFromServer: string) => {
     // Combine the date and time parts
     const formattedDateTime = `${formattedDate} ${formattedTime}`;
     return formattedDateTime;
+}
+
+// assign icon image
+const assignIconImage = (userId: string) => {
+    let IconImage;
+
+    switch (userId) {
+        case '희망' :
+            IconImage = HopeIconImage;
+            break;
+        case '행복' :
+            IconImage = HappinessIconImage;
+            break;
+        case '평화' :
+            IconImage = PeaceIconImage;
+            break;
+        case '미소' :
+            IconImage = SmileIconImage;
+            break;
+        default :
+            IconImage = HopeIconImage;
+            break;
+    }
+
+    return IconImage;
 }
 
 // eslint-disable-next-line react/display-name
@@ -198,10 +226,7 @@ const Sidebar = forwardRef<HTMLElement, SidebarProps>((props, ref) => {
             const userId = messageWritingStatus.userId;
             const isMessageWriting = messageWritingStatus.isMessageWriting;
             const timeStamp = messageWritingStatus.register_date;
-
             const formattedTimeStamp = formatServerTimeDate(timeStamp);
-
-            console.log('message writing status', isMessageWriting);
 
             // update loading message
             setLoadingMessages(prevMessages => {
@@ -270,11 +295,15 @@ const Sidebar = forwardRef<HTMLElement, SidebarProps>((props, ref) => {
                 <article className={styles['otherDialogue']}>
                     {
                         messages.map((msg: any, index: any) => {
+                            const userId = msg.userId;
+
+                            const IconImage = assignIconImage(userId); 
+
                             if (msg.role === 'other') {
                                 return (
                                     <div key={index} className={styles['otherTalk']}>
                                         <figure>
-                                            <Image src={StudySupporterImage} width={26} height={26} alt='멤버 사진' />
+                                            <Image src={IconImage} width={26} height={26} alt='멤버 사진' />
                                         </figure>
                                         <div>
                                             <h2>{msg.content}</h2>
@@ -295,11 +324,15 @@ const Sidebar = forwardRef<HTMLElement, SidebarProps>((props, ref) => {
                     {/* other loading dot */}
                     {
                         loadingMessages.map((msg: any, index: any) => {
+                            // user id
+                            const userId = msg.userId;
+
+                            const IconImage = assignIconImage(userId); 
 
                             return (
                                 <div key={index} className={`${styles['otherTalk']} ${styles['loadingOtherTalk']}`}>
                                     <figure>
-                                        <Image src={StudySupporterImage} width={26} height={26} alt='멤버 사진' />
+                                        <Image src={IconImage} width={26} height={26} alt='멤버 사진' />
                                     </figure>
                                     <div>
                                         <h2>
