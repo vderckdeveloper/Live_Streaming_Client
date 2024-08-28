@@ -59,7 +59,7 @@ const formatServerTimeDate = (dateFromServer: string) => {
 }
 
 // eslint-disable-next-line react/display-name
-const Sidebar = forwardRef((_: any, ref: any) => {
+const Sidebar = forwardRef((props: any, ref: any) => {
     // user input
     const [userInput, setUserInput] = useState<string>('');
 
@@ -81,6 +81,8 @@ const Sidebar = forwardRef((_: any, ref: any) => {
     // path name
     const pathName = usePathname();
 
+    // sidebar status
+    const isSidebarOpen = props.isSidebarOpen;
 
     // Debounced functions for true and false statuses
     const debouncedEmit = useMemo(() => debounce((status: any) => {
@@ -133,11 +135,11 @@ const Sidebar = forwardRef((_: any, ref: any) => {
                 timestamp: new Date().toLocaleTimeString(),
             };
 
+            // emit message writing status
+            webSocketRef.current?.emit('isMessageWriting', false);
+
             // emit message
             webSocketRef.current?.emit('newMessage', otherMessage);
-
-            // emit message writing status
-            debouncedEmit(false);
 
             // set user input to default
             setUserInput('');
@@ -251,11 +253,12 @@ const Sidebar = forwardRef((_: any, ref: any) => {
 
     // scroll down to bottom whenever messages and creatorLoadingDot are added
     useEffect(() => {
+        if (!isSidebarOpen) return;
         if (messages.length === 0) return;
         if (!scrollToBottomRef.current) return;
 
         scrollToBottomRef.current.scrollIntoView({ behavior: 'smooth' });
-    }, [messages, meLoadingDot, loadingMessages]);
+    }, [isSidebarOpen, messages, meLoadingDot, loadingMessages]);
 
     return (
         <section className={styles['container']} ref={ref}>

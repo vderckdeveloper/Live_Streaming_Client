@@ -847,6 +847,7 @@ function Stream() {
                     refs={refs}
                 />
                 <Sidebar
+                    isSidebarOpen={isSidebarOpen}
                     ref={sidebarRef}
                 />
                 <SidebarMobile
