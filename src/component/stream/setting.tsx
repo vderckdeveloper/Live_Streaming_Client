@@ -1,5 +1,6 @@
 import { useState, useEffect, } from 'react';
 import { useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 import styles from '@/styles/stream/setting.module.css';
 
@@ -22,17 +23,26 @@ interface ScreenProps {
 
 function Setting({ isCurrentScreenOff, isScreenRecordingOff, isMicOn, isVideoOn, isSidebaropen, isSidebarMobileOpen, onToggleVideo, onToggleMic, onShareMyCurrentScreen, onStartRecordingScreen, onSidebarMenuOpen, onSidebarMenuClose, onSidebarMobileMenuOpen, onSidebarMobileMenuClose }: ScreenProps) {
 
+    // current time
+    const [currentTime, setCurrentTime] = useState('');
+
     // screen resize
     const [browserWidth, setBrowserWidth] = useState<number>();
 
     // browser width - 1024px 
     const oneThousandTwentyFourWidth = 1024;
-    
+
     // browser width - 540px
     const fiveHundredsFortyWidth = 540;
 
     // router
     const router = useRouter();
+
+    // path name
+    const pathName = usePathname();
+
+    // room code from the path
+    const roomCode = pathName.split('/')[2];
 
     // disconnect streaming and go back to main page
     const onDisconnect = () => {
@@ -57,6 +67,31 @@ function Setting({ isCurrentScreenOff, isScreenRecordingOff, isMicOn, isVideoOn,
         };
     }, []);
 
+    useEffect(() => {
+        const updateTime = () => {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+
+            const formattedHours = (hours % 12 || 12).toString().padStart(2, '0'); // Ensure two digits for hours
+            const formattedMinutes = minutes.toString().padStart(2, '0'); // Ensure two digits for minutes
+            const amPmKorean = hours < 12 ? '오전' : '오후'; // 오전 for AM, 오후 for PM
+
+            // Formatting as "HH:MM 오전/오후"
+            const formattedTime = `${formattedHours}:${formattedMinutes} ${amPmKorean}`;
+            setCurrentTime(formattedTime);
+        };
+
+        // Update the time initially
+        updateTime();
+
+        // Set up an interval to update the time every second
+        const intervalId = setInterval(updateTime, 1000);
+
+        // Clean up the interval when the component unmounts
+        return () => clearInterval(intervalId);
+    }, []);
+
     if (!browserWidth) return;
 
     return (
@@ -66,9 +101,9 @@ function Setting({ isCurrentScreenOff, isScreenRecordingOff, isMicOn, isVideoOn,
                 <div className={styles['setting-bar']}>
                     {/* left setting bar */}
                     <div className={styles['left-setting-bar']}>
-                        <h2>10 : 28 오전 </h2>
+                        <h2>{currentTime}</h2>
                         <span>|</span>
-                        <p>adw-tor-knsm</p>
+                        <p>{roomCode}</p>
                     </div>
                     {/* middle setting bar */}
                     <div className={styles['middle-setting-bar']}>
@@ -166,16 +201,16 @@ function Setting({ isCurrentScreenOff, isScreenRecordingOff, isMicOn, isVideoOn,
                         }
                         {/* side bar for mobile below 540px */}
                         {
-                               browserWidth && (browserWidth <= fiveHundredsFortyWidth)
-                               &&
-                               <div className={styles['svg-box']} onClick={isSidebarMobileOpen ? onSidebarMobileMenuClose : onSidebarMobileMenuOpen}>
-                                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                       <path d="M12 23C18.0751 23 23 18.0751 23 12C23 5.92487 18.0751 1 12 1C5.92487 1 1 5.92487 1 12C1 13.7596 1.41318 15.4228 2.14781 16.8977C2.34303 17.2897 2.40801 17.7377 2.29483 18.1607L1.63966 20.6093C1.35525 21.6723 2.32772 22.6447 3.39068 22.3603L5.83932 21.7052C6.26233 21.592 6.71033 21.657 7.10228 21.8522C8.5772 22.5868 10.2404 23 12 23Z" fill="#ffffff" />
-                                       <path d="M10.9 12.0004C10.9 12.6079 11.3925 13.1004 12 13.1004C12.6075 13.1004 13.1 12.6079 13.1 12.0004C13.1 11.3929 12.6075 10.9004 12 10.9004C11.3925 10.9004 10.9 11.3929 10.9 12.0004Z" fill="#1C274C" />
-                                       <path d="M6.5 12.0004C6.5 12.6079 6.99249 13.1004 7.6 13.1004C8.20751 13.1004 8.7 12.6079 8.7 12.0004C8.7 11.3929 8.20751 10.9004 7.6 10.9004C6.99249 10.9004 6.5 11.3929 6.5 12.0004Z" fill="#1C274C" />
-                                       <path d="M15.3 12.0004C15.3 12.6079 15.7925 13.1004 16.4 13.1004C17.0075 13.1004 17.5 12.6079 17.5 12.0004C17.5 11.3929 17.0075 10.9004 16.4 10.9004C15.7925 10.9004 15.3 11.3929 15.3 12.0004Z" fill="#1C274C" />
-                                   </svg>
-                               </div>
+                            browserWidth && (browserWidth <= fiveHundredsFortyWidth)
+                            &&
+                            <div className={styles['svg-box']} onClick={isSidebarMobileOpen ? onSidebarMobileMenuClose : onSidebarMobileMenuOpen}>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                    <path d="M12 23C18.0751 23 23 18.0751 23 12C23 5.92487 18.0751 1 12 1C5.92487 1 1 5.92487 1 12C1 13.7596 1.41318 15.4228 2.14781 16.8977C2.34303 17.2897 2.40801 17.7377 2.29483 18.1607L1.63966 20.6093C1.35525 21.6723 2.32772 22.6447 3.39068 22.3603L5.83932 21.7052C6.26233 21.592 6.71033 21.657 7.10228 21.8522C8.5772 22.5868 10.2404 23 12 23Z" fill="#ffffff" />
+                                    <path d="M10.9 12.0004C10.9 12.6079 11.3925 13.1004 12 13.1004C12.6075 13.1004 13.1 12.6079 13.1 12.0004C13.1 11.3929 12.6075 10.9004 12 10.9004C11.3925 10.9004 10.9 11.3929 10.9 12.0004Z" fill="#1C274C" />
+                                    <path d="M6.5 12.0004C6.5 12.6079 6.99249 13.1004 7.6 13.1004C8.20751 13.1004 8.7 12.6079 8.7 12.0004C8.7 11.3929 8.20751 10.9004 7.6 10.9004C6.99249 10.9004 6.5 11.3929 6.5 12.0004Z" fill="#1C274C" />
+                                    <path d="M15.3 12.0004C15.3 12.6079 15.7925 13.1004 16.4 13.1004C17.0075 13.1004 17.5 12.6079 17.5 12.0004C17.5 11.3929 17.0075 10.9004 16.4 10.9004C15.7925 10.9004 15.3 11.3929 15.3 12.0004Z" fill="#1C274C" />
+                                </svg>
+                            </div>
                         }
                     </div>
                     {/* right setting bar */}
