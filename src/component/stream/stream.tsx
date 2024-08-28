@@ -28,7 +28,6 @@ interface ScreenRecordingError {
 };
 
 function Stream() {
-
     // my side
     const [isMyWebcamLoading, setIsMyWebcamloading] = useState<boolean>(true);
     const [isCurrentScreenOff, setIsCurrentScreenOff] = useState<boolean>(true);
@@ -89,6 +88,9 @@ function Stream() {
 
     // path name
     const pathName = usePathname();
+
+    // browser width - 540px
+    const fiveHundredsFortyWidth = 540;
 
     // start video
     const onStartVideo = async (): Promise<void> => {
@@ -582,31 +584,35 @@ function Stream() {
     }, [availableVideoRefs]);
 
     const onSidebarMenuOpen = () => {
-        if (sidebarRef.current) {
+        // browser width
+        const browserWidth = window.innerWidth;
+
+        if (!browserWidth) return;
+        if (!sidebarRef.current) return;
+
+        if (browserWidth >= fiveHundredsFortyWidth) {
             sidebarRef.current.style.marginRight = '0px';
-            setIsSidebarOpen(true);
+        } else {
+            sidebarRef.current.style.transform = 'translateX(0)';
         }
+
+        setIsSidebarOpen(true);
     }
 
     const onSidebarMenuClose = () => {
-        if (sidebarRef.current) {
+        // browser width
+        const browserWidth = window.innerWidth;
+
+        if (!browserWidth) return;
+        if (!sidebarRef.current) return;
+
+        if (browserWidth >= fiveHundredsFortyWidth) {
             sidebarRef.current.style.marginRight = '-405px';
-            setIsSidebarOpen(false);
+        } else {
+            sidebarRef.current.style.transform = 'translateX(100%)';
         }
-    }
 
-    const onSidebarMobileMenuOpen = () => {
-        if (sidebarMobileRef.current) {
-            sidebarMobileRef.current.style.transform = 'translateX(0)';
-            setIsSidebarMobileOpen(true);
-        }
-    }
-
-    const onSidebarMobileMenuClose = () => {
-        if (sidebarMobileRef.current) {
-            sidebarMobileRef.current.style.transform = 'translateX(100%)';
-            setIsSidebarMobileOpen(false);
-        }
+        setIsSidebarOpen(false);
     }
 
     // start video and signaling communication
@@ -850,9 +856,6 @@ function Stream() {
                     isSidebarOpen={isSidebarOpen}
                     ref={sidebarRef}
                 />
-                <SidebarMobile
-                    ref={sidebarMobileRef}
-                />
             </section>
             <Setting
                 isCurrentScreenOff={isCurrentScreenOff}
@@ -860,15 +863,12 @@ function Stream() {
                 isMicOn={isMicOn}
                 isVideoOn={isVideoOn}
                 isSidebaropen={isSidebarOpen}
-                isSidebarMobileOpen={isSidebarMobileOpen}
                 onToggleVideo={onToggleVideo}
                 onToggleMic={onToggleMic}
                 onShareMyCurrentScreen={onShareMyCurrentScreen}
                 onStartRecordingScreen={onStartRecordingScreen}
                 onSidebarMenuOpen={onSidebarMenuOpen}
                 onSidebarMenuClose={onSidebarMenuClose}
-                onSidebarMobileMenuOpen={onSidebarMobileMenuOpen}
-                onSidebarMobileMenuClose={onSidebarMobileMenuClose}
             />
         </>
     )
