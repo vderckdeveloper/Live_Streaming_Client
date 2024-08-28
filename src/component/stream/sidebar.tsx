@@ -297,6 +297,7 @@ const Sidebar = forwardRef<HTMLElement, SidebarProps>((props, ref) => {
                         messages.map((msg: any, index: any) => {
                             const userId = msg.userId;
 
+                            // assign icon
                             const IconImage = assignIconImage(userId); 
 
                             if (msg.role === 'other') {
@@ -327,6 +328,7 @@ const Sidebar = forwardRef<HTMLElement, SidebarProps>((props, ref) => {
                             // user id
                             const userId = msg.userId;
 
+                            // assign icon
                             const IconImage = assignIconImage(userId); 
 
                             return (
