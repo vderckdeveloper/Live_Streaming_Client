@@ -89,7 +89,7 @@
     font-weight: 400;
     font-size: 18px;
     color: #ffffff;
-    background: #1a73e8;
+    background: linear-gradient(120deg, #0077cc 32.29%, #105eab);
     border-radius: 10px 10px 10px 0;
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
     white-space: pre-line;
@@ -99,7 +99,7 @@
     content: "";
     position: absolute;
     bottom: -6px;
-    border-top: 6px solid #1a73e8;
+    border-top: 6px solid #0077cc;
     left: 0;
     border-right: 7px solid transparent;
 }
@@ -116,7 +116,7 @@
     left: 2px;
     font-weight: 500;
     font-size: 14px;
-    color: #1a73e8;
+    color: #0077cc;
 }
 
 /* loading other talk */
@@ -162,7 +162,7 @@
     position: relative;
     margin: 0 0 28px 34px;
     padding: 10px 10px 8px 10px;
-    background: linear-gradient(120deg, #00aadd 32.29%, #0099cc);
+    background: #1a73e8;
     border-radius: 10px 10px 0 10px;
     transform: scale(0);
     transform-origin: 0 0;
@@ -176,7 +176,7 @@
     right: 0;
     border-right: none;
     border-left: 5px solid transparent;
-    border-top: 4px solid #0099cc;
+    border-top: 4px solid #1a73e8;
     bottom: -4px;
 }
 
@@ -200,7 +200,7 @@
     width: 100%;
     border-radius: 8px;
     font-size: 24px;
-    background-color: #1a73e8;
+    background: linear-gradient(120deg, #0077cc 32.29%, #105eab);
 }
 
 .aiInput > textarea {
@@ -225,7 +225,7 @@
 .aiInput > button {
     width: 60px;
     padding: 6px 10px;
-    background-color: #9fd4ff;
+    background-color: rgba(0, 0, 0, 0.5);
     border: none;
     border-radius: 10px;
     color: #ffffff;   
@@ -235,10 +235,11 @@
     line-height: 1.5;
     outline: none;
     transition: background 0.2s ease;
+    cursor: pointer;
 }
 
 .aiInput > button:hover {
-    background-color: #0099cc;
+    background-color: rgba(0, 0, 0, 0.7);
 }
 
 @keyframes iconBounce {
