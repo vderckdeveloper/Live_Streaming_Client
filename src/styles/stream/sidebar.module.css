@@ -277,8 +277,15 @@
 }
 
 @media all and (max-width:540px) {
-    /* hide side bar in mobile */
+    /* switch side bar style in mobile */
     .container {
-        display: none;
+        position: fixed;
+        top: 0;
+        right: 0;
+        margin-right: 0;
+        width: 100%;
+        min-width: 280px;
+        transition: transform 0.5s ease-out;
+        transform: translateX(100%);
     }
 }
