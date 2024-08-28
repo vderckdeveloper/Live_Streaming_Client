@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, forwardRef, RefObject } from 'react';
 import Image from 'next/image';
-import StudySupporterImage from '../../../public/image/test/240822_testBot_Ver2.0.png';
+import StudySupporterImage from '../../../public/image/sidebar/240828_HopeIcon_Ver1.0.png';
 
 import styles from '@/styles/stream/sidebarmobile.module.css';
 
