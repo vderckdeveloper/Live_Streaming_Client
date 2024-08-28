@@ -6,7 +6,6 @@ import { io, Socket } from 'socket.io-client';
 // component
 import Screen from "./screen";
 import Sidebar from "./sidebar";
-import SidebarMobile from "./sidebarmobile";
 import Setting from "./setting";
 
 // styles
