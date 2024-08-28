@@ -36,6 +36,7 @@
     justify-content: flex-start;
     align-items: center;
     flex-basis: 33.33%;
+    color: rgba(0, 0, 0, 0.8);
 }
 
 .left-setting-bar > h2 {
