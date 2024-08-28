@@ -70,12 +70,8 @@ function Stream() {
     // side bar ref
     const sidebarRef = useRef<HTMLElement>(null);
 
-    // side bar mobile ref 
-    const sidebarMobileRef = useRef<HTMLElement>(null);
-
     // side bar status
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [isSidebarMobileOpen, setIsSidebarMobileOpen] = useState(false);
 
     // objectify refs
     const refs: Refs = {
@@ -590,8 +586,10 @@ function Stream() {
         if (!browserWidth) return;
         if (!sidebarRef.current) return;
 
-        if (browserWidth >= fiveHundredsFortyWidth) {
+        // pc side bar menu open
+        if (browserWidth > fiveHundredsFortyWidth) {
             sidebarRef.current.style.marginRight = '0px';
+            // mobile side bar menu close
         } else {
             sidebarRef.current.style.transform = 'translateX(0)';
         }
@@ -606,8 +604,10 @@ function Stream() {
         if (!browserWidth) return;
         if (!sidebarRef.current) return;
 
-        if (browserWidth >= fiveHundredsFortyWidth) {
+        // pc side bar menu close
+        if (browserWidth > fiveHundredsFortyWidth) {
             sidebarRef.current.style.marginRight = '-405px';
+            // mobile side bar menu close
         } else {
             sidebarRef.current.style.transform = 'translateX(100%)';
         }
@@ -842,6 +842,37 @@ function Stream() {
             peerConnectionsCopy.clear();
         };
     }, [pathName, createPeerConnectionForAnswerMember, createPeerConnectionForOfferMember]);
+
+    // observe browser width and change sidebar width status
+    useEffect(() => {
+        const changeSidebarWidthStatus = () => {
+            const browserWidth = window.innerWidth;
+
+            if(!sidebarRef.current) return;
+            if(!browserWidth) return;
+
+            if (browserWidth > fiveHundredsFortyWidth && !isSidebarOpen) {
+                sidebarRef.current.style.marginRight = '-405px';
+                sidebarRef.current.style.transform = 'none';
+            } 
+
+            if (browserWidth < fiveHundredsFortyWidth && !isSidebarOpen) {
+                sidebarRef.current.style.marginRight = '0px';
+                sidebarRef.current.style.transform = 'translateX(100%)';
+            }
+        };
+
+        // Add event listener for the resize event
+        window.addEventListener('resize', changeSidebarWidthStatus);
+
+        // Log the initial width when the component mounts
+        changeSidebarWidthStatus();
+
+        // Cleanup the event listener on component unmount
+        return () => {
+            window.removeEventListener('resize', changeSidebarWidthStatus);
+        };
+    }, [isSidebarOpen]);
 
     return (
         <>
