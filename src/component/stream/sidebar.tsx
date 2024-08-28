@@ -6,6 +6,10 @@ import StudySupporterImage from '../../../public/image/test/240822_testBot_Ver2.
 
 import styles from '@/styles/stream/sidebar.module.css';
 
+interface SidebarProps {
+    isSidebarOpen: boolean,
+}
+
 // Define a type for messages
 interface Message {
     userId?: string,
@@ -59,7 +63,7 @@ const formatServerTimeDate = (dateFromServer: string) => {
 }
 
 // eslint-disable-next-line react/display-name
-const Sidebar = forwardRef((props: any, ref: any) => {
+const Sidebar = forwardRef<HTMLElement, SidebarProps>((props, ref) => {
     // user input
     const [userInput, setUserInput] = useState<string>('');
 
@@ -251,7 +255,7 @@ const Sidebar = forwardRef((props: any, ref: any) => {
         };
     }, [pathName]);
 
-    // scroll down to bottom whenever messages and creatorLoadingDot are added
+    // scroll down to bottom whenever messages, meLoadingDot, loadingMessages are added
     useEffect(() => {
         if (!isSidebarOpen) return;
         if (messages.length === 0) return;
@@ -270,7 +274,7 @@ const Sidebar = forwardRef((props: any, ref: any) => {
                                 return (
                                     <div key={index} className={styles['otherTalk']}>
                                         <figure>
-                                            <Image src={StudySupporterImage} width={26} height={26} alt='스터디 서포터 AI' />
+                                            <Image src={StudySupporterImage} width={26} height={26} alt='멤버 사진' />
                                         </figure>
                                         <div>
                                             <h2>{msg.content}</h2>
@@ -295,7 +299,7 @@ const Sidebar = forwardRef((props: any, ref: any) => {
                             return (
                                 <div key={index} className={`${styles['otherTalk']} ${styles['loadingOtherTalk']}`}>
                                     <figure>
-                                        <Image src={StudySupporterImage} width={26} height={26} alt='스터디 서포터 AI' />
+                                        <Image src={StudySupporterImage} width={26} height={26} alt='멤버 사진' />
                                     </figure>
                                     <div>
                                         <h2>
@@ -324,7 +328,7 @@ const Sidebar = forwardRef((props: any, ref: any) => {
                     {/* bottom scroll target */}
                     <div ref={scrollToBottomRef} />
                 </article>
-                <div className={styles.aiInput}>
+                <div className={styles.meInput}>
                     <textarea maxLength={100} value={userInput} onChange={onUserInput} placeholder='CTRL + ENTER 를 눌러주세요!' onKeyDown={onSend} />
                     <button type='button' onClick={onSend}>전송</button>
                 </div>
