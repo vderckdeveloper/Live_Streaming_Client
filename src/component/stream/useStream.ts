@@ -80,10 +80,28 @@ export function useStream() {
                 streamRef.current.getTracks().forEach(track => track.stop());
             }
 
+            // video constraints
+            const videoConstraints = {
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                frameRate: { ideal: 30 }
+            };
+
+            // audio constraints
+            const audioConstraints = {
+                echoCancellation: true,
+                noiseSuppression: true,
+                sampleRate: 48000,
+                channelCount: 2,
+            };
+
             // start webcam stream
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            const stream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: audioConstraints });
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
+
+                // Mute local playback
+                videoRef.current.muted = true;
                 // current status off status
                 setIsCurrentScreenOff(true);
             }
@@ -156,8 +174,23 @@ export function useStream() {
                 track.enabled = true;
             });
 
+            // video constraints
+            const videoConstraints = {
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                frameRate: { ideal: 30 }
+            };
+
+            // audio constraints
+            const audioConstraints = {
+                echoCancellation: true,
+                noiseSuppression: true,
+                sampleRate: 48000,
+                channelCount: 2,
+            };
+
             // start webcam stream
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            const stream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: audioConstraints });
 
             // Reflect the new stream in peer connections
             peerConnections.current.forEach((pc) => {
@@ -223,6 +256,9 @@ export function useStream() {
             // local video stream
             if (videoRef.current) {
                 videoRef.current.srcObject = blankStream;
+
+                // Mute local playback
+                videoRef.current.muted = true;
             }
 
             // Reflect the blank stream in peer connections
@@ -252,10 +288,28 @@ export function useStream() {
                 streamRef.current.getTracks().forEach(track => track.stop());
             }
 
+            // video constraints
+            const videoConstraints = {
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                frameRate: { ideal: 30 }
+            };
+
+            // audio constraints
+            const audioConstraints = {
+                echoCancellation: true,
+                noiseSuppression: true,
+                sampleRate: 48000,
+                channelCount: 2,
+            };
+
             // start webcam stream
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            const stream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: audioConstraints });
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
+
+                // Mute local playback
+                videoRef.current.muted = true;
             }
 
             // Reflect the new stream in peer connections
@@ -296,9 +350,24 @@ export function useStream() {
                 streamRef.current.getTracks().forEach(track => track.stop());
             }
 
+            // video constraints
+            const videoConstraints = {
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                frameRate: { ideal: 30 }
+            };
+
+            // audio constraints
+            const audioConstraints = {
+                echoCancellation: true,
+                noiseSuppression: true,
+                sampleRate: 48000,
+                channelCount: 2,
+            };
+
             // Start the screen sharing stream
-            const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
-            const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: videoConstraints, audio: audioConstraints });
+            const audioStream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
 
             const combinedStream = new MediaStream([
                 ...screenStream.getVideoTracks(),
@@ -307,6 +376,9 @@ export function useStream() {
 
             if (videoRef.current) {
                 videoRef.current.srcObject = combinedStream;
+
+                // Mute local playback
+                videoRef.current.muted = true;
                 // current screen on
                 setIsCurrentScreenOff(false);
             }
@@ -371,9 +443,17 @@ export function useStream() {
         }
 
         try {
+            // audio constraints
+            const audioConstraints = {
+                echoCancellation: true,
+                noiseSuppression: true,
+                sampleRate: 48000,
+                channelCount: 2,
+            };
+
             // get video and audio streams
-            const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'monitor' }, audio: true });
-            const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'monitor' }, audio: audioConstraints });
+            const audioStream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
 
             // combine streams
             const combinedStream = new MediaStream([
@@ -467,9 +547,7 @@ export function useStream() {
 
         // track peer connection
         pc.ontrack = (event) => {
-            // Handle remote streams here
-            console.log('event stream:', event.streams[0]);
-
+            // stream
             const stream = event.streams[0];
 
             // Check if the peer already has a video element assigned
@@ -615,10 +693,28 @@ export function useStream() {
                 streamRef.current.getTracks().forEach(track => track.stop());
             }
 
+            // video constraints
+            const videoConstraints = {
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                frameRate: { ideal: 30 }
+            };
+
+            // audio constraints
+            const audioConstraints = {
+                echoCancellation: true,
+                noiseSuppression: true,
+                sampleRate: 48000,
+                channelCount: 2,
+            };
+
             // start webcam stream
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            const stream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: audioConstraints });
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
+
+                // Mute local playback
+                videoRef.current.muted = true;
             }
 
             // peer connection
@@ -752,7 +848,7 @@ export function useStream() {
 
                         // send answer
                         webSocketRef.current?.emit('answer', { answer, offerId, answerId });
-                        
+
                     } catch (error) {
                         console.error('Error setting remote description:', error);
                     }
@@ -774,8 +870,8 @@ export function useStream() {
                 }
             });
 
-             // websocket - get my assigned id
-             webSocketRef.current.on('getMyAssignedId', async (assignedId) => {
+            // websocket - get my assigned id
+            webSocketRef.current.on('getMyAssignedId', async (assignedId) => {
                 /***
                  * this is where the member who offers and who answers get their own assiged id
                  */
@@ -845,13 +941,13 @@ export function useStream() {
         const changeSidebarWidthStatus = () => {
             const browserWidth = window.innerWidth;
 
-            if(!sidebarRef.current) return;
-            if(!browserWidth) return;
+            if (!sidebarRef.current) return;
+            if (!browserWidth) return;
 
             if (browserWidth > fiveHundredsFortyWidth && !isSidebarOpen) {
                 sidebarRef.current.style.marginRight = '-405px';
                 sidebarRef.current.style.transform = 'none';
-            } 
+            }
 
             if (browserWidth < fiveHundredsFortyWidth && !isSidebarOpen) {
                 sidebarRef.current.style.marginRight = '0px';
