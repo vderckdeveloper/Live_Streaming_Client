@@ -66,6 +66,9 @@ function Stream() {
         return [firstPeerVideoRef, secondPeerVideoRef, thirdPeerVideoRef];
     }, [firstPeerVideoRef, secondPeerVideoRef, thirdPeerVideoRef]);
 
+    // my assigned id - user id
+    const [myAssignedId, setMyAssignedId] = useState<string>('');
+
     // side bar ref
     const sidebarRef = useRef<HTMLElement>(null);
 
@@ -451,7 +454,7 @@ function Stream() {
     };
 
     // create peer connection
-    const createPeerConnectionForOfferMember = useCallback((offerId: string, answerId: string): RTCPeerConnection => {
+    const createPeerConnectionForOfferMember = useCallback((offerId: string, answerId: string, assignedId: string): RTCPeerConnection => {
         // ice server
         const ICE_SERVERS = [
             {
@@ -490,9 +493,10 @@ function Stream() {
             // Check if the peer already has a video element assigned
             if (!assignedVideos.current.has(answerId)) {
                 // Assign the next available video element
-                const availableRef = availableVideoRefs.find(ref => !ref.current?.srcObject);
+                const availableRef: React.RefObject<HTMLVideoElement> | any = availableVideoRefs.find(ref => !ref.current?.srcObject);
                 if (availableRef) {
                     availableRef.current!.srcObject = stream;
+                    availableRef.userId = assignedId;
                     assignedVideos.current.set(answerId, availableRef);
                 } else {
                     console.error("No available video elements for new participant.");
@@ -516,7 +520,7 @@ function Stream() {
     }, [availableVideoRefs]);
 
     // create peer connection
-    const createPeerConnectionForAnswerMember = useCallback((offerId: string, answerId: string): RTCPeerConnection => {
+    const createPeerConnectionForAnswerMember = useCallback((offerId: string, answerId: string, assignedId: string): RTCPeerConnection => {
         // ice server
         const ICE_SERVERS = [
             {
@@ -553,9 +557,10 @@ function Stream() {
             // Check if the peer already has a video element assigned
             if (!assignedVideos.current.has(offerId)) {
                 // Assign the next available video element
-                const availableRef = availableVideoRefs.find(ref => !ref.current?.srcObject);
+                const availableRef: React.RefObject<HTMLVideoElement> | any = availableVideoRefs.find(ref => !ref.current?.srcObject);
                 if (availableRef) {
                     availableRef.current!.srcObject = stream;
+                    availableRef.userId = assignedId;
                     assignedVideos.current.set(offerId, availableRef);
                 } else {
                     console.error("No available video elements for new participant.");
@@ -680,11 +685,11 @@ function Stream() {
                  * create offer and configure local SDP description
                  * send it to the member who answers and configure offer SDP in their setting (the later joined member)
                  */
-                const { offerId, answerId } = data;
+                const { offerId, answerId, assignedId } = data;
 
                 if (!peerConnectionsCopy.has(answerId)) {
                     // create peer connection
-                    const pc = createPeerConnectionForOfferMember(offerId, answerId);
+                    const pc = createPeerConnectionForOfferMember(offerId, answerId, assignedId);
                     if (streamRef.current) {
                         // add track
                         streamRef.current.getTracks().forEach(track => {
@@ -740,12 +745,12 @@ function Stream() {
                  * create offer and configure SDP description
                  * send it to the member who offered SDP first (the later joined member)
                  */
-                const { offer, offerId, answerId } = data;
+                const { offer, offerId, answerId, assignedId } = data;
 
                 if (offer && offer.sdp && offer.type) {
                     try {
                         // create peer connection
-                        const pc = createPeerConnectionForAnswerMember(offerId, answerId);
+                        const pc = createPeerConnectionForAnswerMember(offerId, answerId, assignedId);
                         // set remote description
                         await pc.setRemoteDescription(new RTCSessionDescription(offer));
 
@@ -763,6 +768,7 @@ function Stream() {
 
                         // send answer
                         webSocketRef.current?.emit('answer', { answer, offerId, answerId });
+                        
                     } catch (error) {
                         console.error('Error setting remote description:', error);
                     }
@@ -782,6 +788,14 @@ function Stream() {
                 if (pc) {
                     await pc.setRemoteDescription(new RTCSessionDescription(answer));
                 }
+            });
+
+             // websocket - get my assigned id
+             webSocketRef.current.on('getMyAssignedId', async (assignedId) => {
+                /***
+                 * this is where the member who offers and who answers get their own assiged id
+                 */
+                setMyAssignedId(assignedId);
             });
 
             // websocket - connection errors
@@ -880,6 +894,7 @@ function Stream() {
                     isMyWebcamLoading={isMyWebcamLoading}
                     isOnlyMyVideoAvailable={isOnlyMyVideoAvailable}
                     setIsOnlyMyVideoAvailable={setIsOnlyMyVideoAvailable}
+                    myAssignedId={myAssignedId}
                     refs={refs}
                 />
                 <Sidebar
