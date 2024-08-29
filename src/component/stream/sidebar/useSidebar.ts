@@ -1,30 +1,18 @@
-import React, { useState, useRef, useEffect, forwardRef, useMemo } from 'react';
-import Image from 'next/image';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import { io, Socket } from 'socket.io-client';
-import HopeIconImage from '../../../public/image/sidebar/240828_HopeIcon_Ver1.0.png';
-import HappinessIconImage from '../../../public/image/sidebar/240828_HappinessIcon_Ver1.0.png';
-import PeaceIconImage from '../../../public/image/sidebar/240828_PeaceIcon_Ver1.0.png';
-import SmileIconImage from '../../../public/image/sidebar/240828_SmileIcon_Ver1.0.png';
 
-import styles from '@/styles/stream/sidebar.module.css';
-
-interface SidebarProps {
-    isSidebarOpen: boolean,
-}
-
-// Define a type for messages
-interface Message {
-    userId?: string,
+export interface Message {
+    userId?: string;
     role: 'me' | 'other';
     content: string;
     timestamp: string;
 }
 
-interface LoadingMessage {
-    userId: string,
-    isMessageWriting: boolean,
-    timestamp: string,
+export interface LoadingMessage {
+    userId: string;
+    isMessageWriting: boolean;
+    timestamp: string;
 }
 
 // Debounce function
@@ -58,40 +46,15 @@ const formatServerTimeDate = (dateFromServer: string) => {
         hours = 12;
     }
 
+    // format time
     const formattedTime = `${period} ${hours}:${minutes}:${seconds}`;
 
     // Combine the date and time parts
     const formattedDateTime = `${formattedDate} ${formattedTime}`;
     return formattedDateTime;
-}
+};
 
-// assign icon image
-const assignIconImage = (userId: string) => {
-    let IconImage;
-
-    switch (userId) {
-        case '희망' :
-            IconImage = HopeIconImage;
-            break;
-        case '행복' :
-            IconImage = HappinessIconImage;
-            break;
-        case '평화' :
-            IconImage = PeaceIconImage;
-            break;
-        case '미소' :
-            IconImage = SmileIconImage;
-            break;
-        default :
-            IconImage = HopeIconImage;
-            break;
-    }
-
-    return IconImage;
-}
-
-// eslint-disable-next-line react/display-name
-const Sidebar = forwardRef<HTMLElement, SidebarProps>((props, ref) => {
+export const useSidebar = (isSidebarOpen: boolean) => {
     // user input
     const [userInput, setUserInput] = useState<string>('');
 
@@ -112,9 +75,6 @@ const Sidebar = forwardRef<HTMLElement, SidebarProps>((props, ref) => {
 
     // path name
     const pathName = usePathname();
-
-    // sidebar status
-    const isSidebarOpen = props.isSidebarOpen;
 
     // Debounced functions for true and false statuses
     const debouncedEmit = useMemo(() => debounce((status: any) => {
@@ -181,15 +141,15 @@ const Sidebar = forwardRef<HTMLElement, SidebarProps>((props, ref) => {
         }
     };
 
-    // connect web socket
     useEffect(() => {
+        // return if pathname does not exist
         if (!pathName) return;
 
-        // room code from the path
+        // get room code
         const roomCode = pathName.split('/')[2];
         if (!roomCode) return;
 
-        // Connect to the WebSocket server
+        // websocket - initialization
         webSocketRef.current = io(`${process.env.NEXT_PUBLIC_DIRECT_CHAT_URL}/websocket/chat`, {
             withCredentials: true,
             autoConnect: true,
@@ -198,62 +158,44 @@ const Sidebar = forwardRef<HTMLElement, SidebarProps>((props, ref) => {
             transports: ["websocket"],
         });
 
-        // Event listener for successful connection
+        // websocket - connect
         webSocketRef.current.on('connect', () => {
             console.log('WebSocket Chat Connected!');
             webSocketRef.current?.emit('register', roomCode);
         });
 
-        // Event listener for receiving messages
+        // websocket - new message
         webSocketRef.current.on('newMessage', (message) => {
             const userId = message.userId;
             const role = message.role;
             const content = message.content;
             const timeStamp = message.register_date;
-
             const formattedTimeStamp = formatServerTimeDate(timeStamp);
 
-            setMessages(prevMessages => [...prevMessages, {
-                userId: userId,
-                role: role,
-                content: content,
-                timestamp: formattedTimeStamp,
-            }]);
+            // set messages
+            setMessages(prevMessages => [...prevMessages, { userId, role, content, timestamp: formattedTimeStamp }]);
         });
 
-        // Event listener for isMessageWriting 
+        // websocket - is message writing
         webSocketRef.current.on('isMessageWriting', (messageWritingStatus) => {
             const userId = messageWritingStatus.userId;
             const isMessageWriting = messageWritingStatus.isMessageWriting;
             const timeStamp = messageWritingStatus.register_date;
             const formattedTimeStamp = formatServerTimeDate(timeStamp);
 
-            // update loading message
+            // set loading messages
             setLoadingMessages(prevMessages => {
-                // Check if there's already a message with the same userId
                 const messageExists = prevMessages.some(message => message.userId === userId);
-
-                // If the message is a "writing" status message and there's no existing message with the same userId
                 if (isMessageWriting && !messageExists) {
-                    // Add the new message
-                    return [
-                        ...prevMessages,
-                        {
-                            userId: userId,
-                            isMessageWriting: isMessageWriting,
-                            timestamp: formattedTimeStamp,
-                        }
-                    ];
+                    return [...prevMessages, { userId, isMessageWriting, timestamp: formattedTimeStamp }];
                 } else if (!isMessageWriting) {
-                    // If the message is not a "writing" status, remove any existing message from the user
                     return prevMessages.filter(message => message.userId !== userId);
                 }
-
-                // If there's already a message with the same userId, return prevMessages unchanged
                 return prevMessages;
             });
         });
 
+        // websocket - error handling
         webSocketRef.current.on('auth_error', (error) => {
             console.error('Auth Error:', error);
             alert('유저 로그인 정보가 존재하지 않습니다. 로그인후 다시 시도해주세요.');
@@ -274,13 +216,11 @@ const Sidebar = forwardRef<HTMLElement, SidebarProps>((props, ref) => {
             alert('채팅 연결에 실패했습니다. 커넥션을 확인후 다시 시도해주세요.');
         });
 
-        // Clean up on component unmount
         return () => {
             webSocketRef.current?.disconnect();
         };
     }, [pathName]);
 
-    // scroll down to bottom whenever messages, meLoadingDot, loadingMessages are added
     useEffect(() => {
         if (!isSidebarOpen) return;
         if (messages.length === 0) return;
@@ -289,87 +229,13 @@ const Sidebar = forwardRef<HTMLElement, SidebarProps>((props, ref) => {
         scrollToBottomRef.current.scrollIntoView({ behavior: 'smooth' });
     }, [isSidebarOpen, messages, meLoadingDot, loadingMessages]);
 
-    return (
-        <section className={styles['container']} ref={ref}>
-            <div className={styles['wrapper']}>
-                <article className={styles['otherDialogue']}>
-                    {
-                        messages.map((msg: any, index: any) => {
-                            const userId = msg.userId;
-
-                            // assign icon
-                            const IconImage = assignIconImage(userId); 
-
-                            if (msg.role === 'other') {
-                                return (
-                                    <div key={index} className={styles['otherTalk']}>
-                                        <figure>
-                                            <Image src={IconImage} width={26} height={26} alt='멤버 사진' />
-                                        </figure>
-                                        <div>
-                                            <h2>{msg.content}</h2>
-                                            <p>{msg.timestamp}</p>
-                                        </div>
-                                        <h5>{msg.userId}</h5>
-                                    </div>
-                                );
-                            }
-
-                            return (
-                                <div key={index} className={styles['meTalk']}>
-                                    <p>{msg.content}</p>
-                                </div>
-                            );
-                        })
-                    }
-                    {/* other loading dot */}
-                    {
-                        loadingMessages.map((msg: any, index: any) => {
-                            // user id
-                            const userId = msg.userId;
-
-                            // assign icon
-                            const IconImage = assignIconImage(userId); 
-
-                            return (
-                                <div key={index} className={`${styles['otherTalk']} ${styles['loadingOtherTalk']}`}>
-                                    <figure>
-                                        <Image src={IconImage} width={26} height={26} alt='멤버 사진' />
-                                    </figure>
-                                    <div>
-                                        <h2>
-                                            <span className={styles['loadingDot']}></span>
-                                            <span className={styles['loadingDot']}></span>
-                                            <span className={styles['loadingDot']}></span>
-                                        </h2>
-                                        <p>{msg.timestamp}</p>
-                                    </div>
-                                    <h5>{msg.userId}</h5>
-                                </div>
-                            );
-
-                        })
-                    }
-                    {/* me loading dot */}
-                    {
-                        meLoadingDot
-                        &&
-                        <div className={styles['meTalk']}>
-                            <span className={styles['loadingDot']}></span>
-                            <span className={styles['loadingDot']}></span>
-                            <span className={styles['loadingDot']}></span>
-                        </div>
-                    }
-                    {/* bottom scroll target */}
-                    <div ref={scrollToBottomRef} />
-                </article>
-                <div className={styles.meInput}>
-                    <textarea maxLength={100} value={userInput} onChange={onUserInput} placeholder='CTRL + ENTER 를 눌러주세요!' onKeyDown={onSend} />
-                    <button type='button' onClick={onSend}>전송</button>
-                </div>
-            </div>
-        </section>
-    );
-});
-
-export default Sidebar;
+    return {
+        userInput,
+        messages,
+        meLoadingDot,
+        loadingMessages,
+        scrollToBottomRef,
+        onUserInput,
+        onSend,
+    };
+};

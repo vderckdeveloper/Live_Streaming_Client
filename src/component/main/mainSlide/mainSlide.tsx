@@ -1,37 +1,18 @@
 "use client";
-import { useState } from "react";
-import { useRouter } from 'next/navigation';
-
-// utility
-import { generateRoomCode } from "../../../utils/utility";
-
-// image
-import groupVideoImage from '../../../public/image/main/240730_mainSlide_Image(1)_Ver1.0.png';
-import recordVideoImage from '../../../public/image/main/240730_mainSlide_Image(2)_Ver1.0.png';
-
-import Image, { StaticImageData } from "next/image";
-// Import Swiper React components
-import { Swiper, SwiperSlide, SwiperClass } from "swiper/react";
-
-
-// Import Swiper styles
+import Image from "next/image";
+import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import 'swiper/css/navigation';
 import "swiper/css/pagination";
-
-// import required modules
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
+import styles from '@/component/main/mainSlide/mainSlide.module.css';
+import { useMainSlide, SlideListProps } from './useMainSlide';
 
-import styles from '@/styles/main/mainSlide.module.css';
-
-interface SlideListProps {
-    imagePath: StaticImageData;
+interface SlideContentProps {
+    imagePath: SlideListProps['imagePath'];
 }
 
-function SlideContent(props: SlideListProps) {
-
-    const imagePath = props.imagePath;
-
+function SlideContent({ imagePath }: SlideContentProps) {
     return (
         <section>
             <div className={styles['image-box']}>
@@ -42,53 +23,12 @@ function SlideContent(props: SlideListProps) {
 }
 
 function MainSlide() {
-
-    // router
-    const router = useRouter();
-
-    // start streaming
-    const onStart = () => {
-        const roomCode = generateRoomCode();
-        router.push(`/stream/${roomCode}`);
-    }
-
-    // slide list
-    const slideList: SlideListProps[] = [
-        {
-            imagePath: groupVideoImage,
-        },
-        {
-            imagePath: recordVideoImage,
-        },
-        {
-            imagePath: groupVideoImage,
-        },
-        {
-            imagePath: recordVideoImage,
-        },
-        {
-            imagePath: groupVideoImage,
-        },
-        {
-            imagePath: recordVideoImage,
-        },
-    ];
-
-    const [swiper, setSwiper] = useState<SwiperClass>();
-
-    const handlePrev = () => {
-        swiper?.slidePrev()
-    }
-    const handleNext = () => {
-        swiper?.slideNext()
-    }
-
+    const { slideList, onStart, handlePrev, handleNext, setSwiper } = useMainSlide();
 
     return (
         <main className={styles['container']}>
             <div className={styles['wrapper']}>
                 <div className={styles['slide-frame']}>
-                    {/* button box */}
                     <article className={`${styles['button-box']} ${styles['left-button-box']}`}>
                         <button onClick={handlePrev}>
                             <svg width="24" height="24" viewBox="0 0 24 24">
@@ -96,7 +36,6 @@ function MainSlide() {
                             </svg>
                         </button>
                     </article>
-                    {/* swiper */}
                     <Swiper
                         slidesPerView={1}
                         spaceBetween={30}
@@ -110,26 +49,17 @@ function MainSlide() {
                                 slidesPerView: 1,
                             },
                         }}
-                        onSwiper={(e) => { setSwiper(e) }}
+                        onSwiper={setSwiper}
                         modules={[Autoplay, Navigation, Pagination]}
                         pagination={{ clickable: true }}
                         className={`${styles['main-slide']} main-slide`}
                     >
-                        {
-                            slideList.map((item, index) => {
-                                const imagePath = item.imagePath;
-
-                                return (
-                                    <SwiperSlide key={index} >
-                                        <SlideContent
-                                            imagePath={imagePath}
-                                        />
-                                    </SwiperSlide>
-                                );
-                            })
-                        }
+                        {slideList.map((item, index) => (
+                            <SwiperSlide key={index}>
+                                <SlideContent imagePath={item.imagePath} />
+                            </SwiperSlide>
+                        ))}
                     </Swiper>
-                    {/* navigation button */}
                     <article className={`${styles['button-box']} ${styles['right-button-box']}`}>
                         <button onClick={handleNext}>
                             <svg width="24" height="24" viewBox="0 0 24 24">
@@ -151,4 +81,3 @@ function MainSlide() {
 }
 
 export default MainSlide;
-

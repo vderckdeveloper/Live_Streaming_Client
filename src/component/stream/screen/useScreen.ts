@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
-import styles from '@/styles/stream/screen.module.css';
+import { useEffect, useState } from 'react';
 
 interface Refs {
     // my side
@@ -11,17 +10,14 @@ interface Refs {
     thirdPeerVideoRef: React.RefObject<HTMLVideoElement> | any;
 }
 
-interface ScreenProps {
-    isMyWebcamLoading: boolean;
+interface UseScreenProps {
     isOnlyMyVideoAvailable: boolean;
     setIsOnlyMyVideoAvailable: React.Dispatch<React.SetStateAction<boolean>>;
-    myAssignedId: string;
     refs: Refs;
 }
 
-const Screen = ({ isMyWebcamLoading, isOnlyMyVideoAvailable, setIsOnlyMyVideoAvailable, myAssignedId, refs }: ScreenProps) => {
-
-    const { videoRef, firstPeerVideoRef, secondPeerVideoRef, thirdPeerVideoRef } = refs;
+export function useScreen({ isOnlyMyVideoAvailable, setIsOnlyMyVideoAvailable, refs }: UseScreenProps) {
+    const { firstPeerVideoRef, secondPeerVideoRef, thirdPeerVideoRef } = refs;
 
     const [isFirstPeerVideoReady, setIsFirstPeerVideoReady] = useState<boolean>(false);
     const [isSecondPeerVideoReady, setIsSecondPeerVideoReady] = useState<boolean>(false);
@@ -48,7 +44,7 @@ const Screen = ({ isMyWebcamLoading, isOnlyMyVideoAvailable, setIsOnlyMyVideoAva
         const eventListeners = peerVideos.map(({ ref, setReady }): (() => void) | undefined => {
             const videoElement = ref.current;
             if (videoElement) {
-                // chekc if peer video is ready and if my video is the only video
+                // check if peer video is ready and if my video is the only video
                 const handleMetadataLoaded = () => { handleVideoReady(videoElement, setReady), setIsOnlyMyVideoAvailable(false) };
                 videoElement.addEventListener('loadedmetadata', handleMetadataLoaded);
 
@@ -61,7 +57,7 @@ const Screen = ({ isMyWebcamLoading, isOnlyMyVideoAvailable, setIsOnlyMyVideoAva
         };
     }, [firstPeerVideoRef, secondPeerVideoRef, thirdPeerVideoRef, setIsOnlyMyVideoAvailable]);
 
-    // check if first peer disconnects video. it checks srcObject is 'null'
+    // check if peer disconnects video. it checks srcObject is 'null'
     useEffect(() => {
         // Access the video element from the ref
         const firstPeerVideoElement = firstPeerVideoRef.current;
@@ -108,49 +104,9 @@ const Screen = ({ isMyWebcamLoading, isOnlyMyVideoAvailable, setIsOnlyMyVideoAva
         return () => clearInterval(interval);
     }, [firstPeerVideoRef, secondPeerVideoRef, thirdPeerVideoRef]);
 
-    return (
-        <section className={styles['container']}>
-            <div className={isOnlyMyVideoAvailable ? styles['my-only-screen-wrapper'] : styles['wrapper']}>
-                {/* my screen */}
-                <div className={isOnlyMyVideoAvailable ? styles['my-only-screen'] : styles['screen']}>
-                    <div className={styles['video-box']}>
-                        <video autoPlay playsInline ref={videoRef}></video>
-                    </div>
-                    <h2 className={styles['video-text']}>{myAssignedId}</h2>
-                </div>
-                {/* other screen */}
-                <div className={styles['screen']} style={!isOnlyMyVideoAvailable && isFirstPeerVideoReady ? { display: 'flex' } : { display: 'none' }}>
-                    <div className={styles['video-box']}>
-                        <video autoPlay playsInline ref={firstPeerVideoRef}></video>
-                    </div>
-                    <h2 className={styles['video-text']}>{firstPeerVideoRef.userId ? firstPeerVideoRef.userId : ''}</h2>
-                </div>
-                {/* other screen */}
-                <div className={styles['screen']} style={!isOnlyMyVideoAvailable && isSecondPeerVideoReady ? { display: 'flex' } : { display: 'none' }}>
-                    <div className={styles['video-box']}>
-                        <video autoPlay playsInline ref={secondPeerVideoRef}></video>
-                    </div>
-                    <h2 className={styles['video-text']}>{secondPeerVideoRef.userId ? secondPeerVideoRef.userId : ''}</h2>
-                </div>
-                {/* other screen */}
-                <div className={styles['screen']} style={!isOnlyMyVideoAvailable && isThirdPeerVideoReady ? { display: 'flex' } : { display: 'none' }}>
-                    <div className={styles['video-box']}>
-                        <video autoPlay playsInline ref={thirdPeerVideoRef}></video>
-                    </div>
-                    <h2 className={styles['video-text']}>{thirdPeerVideoRef.userId ? thirdPeerVideoRef.userId : ''}</h2>
-                </div>
-            </div>
-            {
-                isMyWebcamLoading
-                &&
-                <div className={styles['screen-loader-container']}>
-                    <div className={styles['screen-loader-wrapper']}>
-                        <span className={styles['screen-loader']}></span>
-                    </div>
-                </div>
-            }
-        </section >
-    )
+    return {
+        isFirstPeerVideoReady,
+        isSecondPeerVideoReady,
+        isThirdPeerVideoReady,
+    };
 }
-
-export default Screen;
