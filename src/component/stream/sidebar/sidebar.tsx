@@ -1,4 +1,5 @@
 import React, { forwardRef } from 'react';
+import { useSidebar, Message, LoadingMessage } from './useSidebar';
 import Image from 'next/image';
 import HopeIconImage from '../../../../public/image/sidebar/240828_HopeIcon_Ver1.0.png';
 import HappinessIconImage from '../../../../public/image/sidebar/240828_HappinessIcon_Ver1.0.png';
@@ -6,12 +7,13 @@ import PeaceIconImage from '../../../../public/image/sidebar/240828_PeaceIcon_Ve
 import SmileIconImage from '../../../../public/image/sidebar/240828_SmileIcon_Ver1.0.png';
 
 import styles from '@/component/stream/sidebar/sidebar.module.css';
-import { useSidebar, Message, LoadingMessage } from './useSidebar';
 
+// side bar prop interface
 interface SidebarProps {
     isSidebarOpen: boolean;
 }
 
+// assign icon image
 const assignIconImage = (userId: string) => {
     switch (userId) {
         case '희망':
@@ -45,7 +47,9 @@ const Sidebar = forwardRef<HTMLElement, SidebarProps>(({ isSidebarOpen }, ref) =
                 {/* other dialogue */}
                 <article className={styles['otherDialogue']}>
                     {messages.map((msg: Message, index: number) => {
+                        // user id
                         const userId = msg.userId;
+                        // assign icon image
                         const IconImage = assignIconImage(userId || '');
 
                         if (msg.role === 'other') {
@@ -71,7 +75,9 @@ const Sidebar = forwardRef<HTMLElement, SidebarProps>(({ isSidebarOpen }, ref) =
                     })}
                     {/* other loading dot */}
                     {loadingMessages.map((msg: LoadingMessage, index: number) => {
+                        // user id
                         const userId = msg.userId;
+                        // assign icon image
                         const IconImage = assignIconImage(userId);
 
                         return (

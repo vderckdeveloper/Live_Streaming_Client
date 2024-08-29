@@ -1,6 +1,7 @@
 import { useScreen } from './useScreen';
 import styles from '@/component/stream/screen/screen.module.css';
 
+// refs interface
 interface Refs {
     // my side
     videoRef: React.RefObject<HTMLVideoElement>;
@@ -11,6 +12,7 @@ interface Refs {
     thirdPeerVideoRef: React.RefObject<HTMLVideoElement> | any;
 }
 
+// screen props interface
 interface ScreenProps {
     isMyWebcamLoading: boolean;
     isOnlyMyVideoAvailable: boolean;
@@ -26,7 +28,7 @@ const Screen = ({ isMyWebcamLoading, isOnlyMyVideoAvailable, setIsOnlyMyVideoAva
         isFirstPeerVideoReady,
         isSecondPeerVideoReady,
         isThirdPeerVideoReady,
-    } = useScreen({ isOnlyMyVideoAvailable, setIsOnlyMyVideoAvailable, refs });
+    } = useScreen({ setIsOnlyMyVideoAvailable, refs });
 
     return (
         <section className={styles['container']}>
@@ -60,6 +62,7 @@ const Screen = ({ isMyWebcamLoading, isOnlyMyVideoAvailable, setIsOnlyMyVideoAva
                     <h2 className={styles['video-text']}>{thirdPeerVideoRef.userId ? thirdPeerVideoRef.userId : ''}</h2>
                 </div>
             </div>
+            {/* screen loading */}
             {
                 isMyWebcamLoading
                 &&

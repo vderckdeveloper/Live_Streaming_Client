@@ -28,7 +28,9 @@ function Stream() {
 
     return (
         <>
+            {/* frame */}
             <section className={styles['frame']}>
+                {/* screen */}
                 <Screen
                     isMyWebcamLoading={isMyWebcamLoading}
                     isOnlyMyVideoAvailable={isOnlyMyVideoAvailable}
@@ -36,11 +38,13 @@ function Stream() {
                     myAssignedId={myAssignedId}
                     refs={refs}
                 />
+                {/* side bar */}
                 <Sidebar
                     isSidebarOpen={isSidebarOpen}
                     ref={sidebarRef}
                 />
             </section>
+            {/* setting */}
             <Setting
                 isCurrentScreenOff={isCurrentScreenOff}
                 isScreenRecordingOff={isScreenRecordingOff}

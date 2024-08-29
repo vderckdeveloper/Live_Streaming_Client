@@ -11,22 +11,29 @@ export interface SlideListProps {
 }
 
 export function useMainSlide() {
-    const router = useRouter();
+    // swiper
     const [swiper, setSwiper] = useState<SwiperClass>();
 
+    // router
+    const router = useRouter();
+
+    // on start
     const onStart = () => {
         const roomCode = generateRoomCode();
         router.push(`/stream/${roomCode}`);
     };
 
+    // handle prev slide
     const handlePrev = () => {
         swiper?.slidePrev();
     };
 
+    // handle next slide
     const handleNext = () => {
         swiper?.slideNext();
     };
 
+    // slide list
     const slideList: SlideListProps[] = [
         { imagePath: groupVideoImage },
         { imagePath: recordVideoImage },

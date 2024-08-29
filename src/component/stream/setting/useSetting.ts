@@ -29,6 +29,7 @@ export function useSetting() {
 
     // Observe screen resizing
     useEffect(() => {
+        // browser width resize function 
         const handleResize = () => {
             setBrowserWidth(window.innerWidth);
         };

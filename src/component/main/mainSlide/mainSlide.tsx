@@ -8,10 +8,12 @@ import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import styles from '@/component/main/mainSlide/mainSlide.module.css';
 import { useMainSlide, SlideListProps } from './useMainSlide';
 
+// slide content props
 interface SlideContentProps {
     imagePath: SlideListProps['imagePath'];
 }
 
+// slide content
 function SlideContent({ imagePath }: SlideContentProps) {
     return (
         <section>
@@ -22,13 +24,16 @@ function SlideContent({ imagePath }: SlideContentProps) {
     );
 }
 
+// main slide
 function MainSlide() {
     const { slideList, onStart, handlePrev, handleNext, setSwiper } = useMainSlide();
 
     return (
         <main className={styles['container']}>
             <div className={styles['wrapper']}>
+                {/* slide frame */}
                 <div className={styles['slide-frame']}>
+                    {/* hanlde prev slide btn*/}
                     <article className={`${styles['button-box']} ${styles['left-button-box']}`}>
                         <button onClick={handlePrev}>
                             <svg width="24" height="24" viewBox="0 0 24 24">
@@ -36,6 +41,7 @@ function MainSlide() {
                             </svg>
                         </button>
                     </article>
+                    {/* main slide */}
                     <Swiper
                         slidesPerView={1}
                         spaceBetween={30}
@@ -60,6 +66,7 @@ function MainSlide() {
                             </SwiperSlide>
                         ))}
                     </Swiper>
+                    {/* handle next slide btn */}
                     <article className={`${styles['button-box']} ${styles['right-button-box']}`}>
                         <button onClick={handleNext}>
                             <svg width="24" height="24" viewBox="0 0 24 24">
@@ -68,6 +75,7 @@ function MainSlide() {
                         </button>
                     </article>
                 </div>
+                {/* text frame */}
                 <div className={styles['text-frame']}>
                     <div className={styles['text-box']}>
                         <h2>다자간 화상 통화 교육을 위한 최고의 선택!</h2>

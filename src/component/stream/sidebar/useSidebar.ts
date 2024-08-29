@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import { io, Socket } from 'socket.io-client';
 
+// message interface
 export interface Message {
     userId?: string;
     role: 'me' | 'other';
@@ -9,6 +10,7 @@ export interface Message {
     timestamp: string;
 }
 
+// loading message interface
 export interface LoadingMessage {
     userId: string;
     isMessageWriting: boolean;
@@ -79,21 +81,25 @@ export const useSidebar = (isSidebarOpen: boolean) => {
     // Debounced functions for true and false statuses
     const debouncedEmit = useMemo(() => debounce((status: any) => {
         if (webSocketRef.current) {
+            // send message writing status
             webSocketRef.current.emit('isMessageWriting', status);
         }
     }, 200), []);
 
     const onUserInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+        // user input
         const userInput = event.target.value;
+        // set user input
         setUserInput(userInput);
 
         if (!webSocketRef.current) return;
 
-        // emit message writing status
+        // emit message writing status - true
         if (userInput && userInput !== '') {
             const messageWritingStatus = true;
             setMeLoadingDot(messageWritingStatus);
             debouncedEmit(messageWritingStatus);
+            // emit message writing status - false
         } else {
             const messageWritingStatus = false;
             setMeLoadingDot(messageWritingStatus);
@@ -161,15 +167,21 @@ export const useSidebar = (isSidebarOpen: boolean) => {
         // websocket - connect
         webSocketRef.current.on('connect', () => {
             console.log('WebSocket Chat Connected!');
+            // send room to register
             webSocketRef.current?.emit('register', roomCode);
         });
 
         // websocket - new message
         webSocketRef.current.on('newMessage', (message) => {
+            // user id
             const userId = message.userId;
+            // role
             const role = message.role;
+            // content
             const content = message.content;
+            // time stamp
             const timeStamp = message.register_date;
+            // format time stamp
             const formattedTimeStamp = formatServerTimeDate(timeStamp);
 
             // set messages
@@ -178,16 +190,24 @@ export const useSidebar = (isSidebarOpen: boolean) => {
 
         // websocket - is message writing
         webSocketRef.current.on('isMessageWriting', (messageWritingStatus) => {
+            // user id
             const userId = messageWritingStatus.userId;
+            // is message writing
             const isMessageWriting = messageWritingStatus.isMessageWriting;
+            // timestamp
             const timeStamp = messageWritingStatus.register_date;
+            // format time stamp
             const formattedTimeStamp = formatServerTimeDate(timeStamp);
 
             // set loading messages
             setLoadingMessages(prevMessages => {
+                // check if message exist
                 const messageExists = prevMessages.some(message => message.userId === userId);
+
+                // set loading message - true
                 if (isMessageWriting && !messageExists) {
                     return [...prevMessages, { userId, isMessageWriting, timestamp: formattedTimeStamp }];
+                    // set loading message - false
                 } else if (!isMessageWriting) {
                     return prevMessages.filter(message => message.userId !== userId);
                 }
@@ -195,32 +215,37 @@ export const useSidebar = (isSidebarOpen: boolean) => {
             });
         });
 
-        // websocket - error handling
+        // websocket - auth error handling
         webSocketRef.current.on('auth_error', (error) => {
             console.error('Auth Error:', error);
             alert('유저 로그인 정보가 존재하지 않습니다. 로그인후 다시 시도해주세요.');
         });
 
+        // websocket - register error handling
         webSocketRef.current.on('register_error', (error) => {
             console.error('Register Error:', error);
             alert('채팅 등록 정보에 에러가 발생했습니다. 다시 시도해주세요.');
         });
 
+        // websocket - room error handling
         webSocketRef.current.on('room_error', (error) => {
             console.error('Register Error:', error);
             alert('채팅방 입장 관련 에러가 발생했습니다. 다시 시도해주세요.');
         });
 
+        // websocket - connect error handling
         webSocketRef.current.on('connect_error', (error) => {
             console.error('Connection Error:', error);
             alert('채팅 연결에 실패했습니다. 커넥션을 확인후 다시 시도해주세요.');
         });
 
+        // clean up
         return () => {
             webSocketRef.current?.disconnect();
         };
     }, [pathName]);
 
+    // scroll to bottom when messages, me loading dot, and loading messages are added
     useEffect(() => {
         if (!isSidebarOpen) return;
         if (messages.length === 0) return;

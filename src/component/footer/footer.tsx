@@ -5,6 +5,7 @@ function Footer() {
     return (
         <section className={styles.container}>
             <div className={styles.wrapper}>
+                {/* foorter info */}
                 <section>
                     <div>
                         <span>

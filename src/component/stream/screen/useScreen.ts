@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+// refs interface
 interface Refs {
     // my side
     videoRef: React.RefObject<HTMLVideoElement>;
@@ -10,15 +11,16 @@ interface Refs {
     thirdPeerVideoRef: React.RefObject<HTMLVideoElement> | any;
 }
 
+// use screen props interface
 interface UseScreenProps {
-    isOnlyMyVideoAvailable: boolean;
     setIsOnlyMyVideoAvailable: React.Dispatch<React.SetStateAction<boolean>>;
     refs: Refs;
 }
 
-export function useScreen({ isOnlyMyVideoAvailable, setIsOnlyMyVideoAvailable, refs }: UseScreenProps) {
+export function useScreen({ setIsOnlyMyVideoAvailable, refs }: UseScreenProps) {
     const { firstPeerVideoRef, secondPeerVideoRef, thirdPeerVideoRef } = refs;
 
+    // peer video ready
     const [isFirstPeerVideoReady, setIsFirstPeerVideoReady] = useState<boolean>(false);
     const [isSecondPeerVideoReady, setIsSecondPeerVideoReady] = useState<boolean>(false);
     const [isThirdPeerVideoReady, setIsThirdPeerVideoReady] = useState<boolean>(false);

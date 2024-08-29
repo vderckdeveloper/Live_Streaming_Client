@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 
+// date format type
 interface DateFormatOptions {
     month: 'long' | 'short' | 'narrow';
     day: 'numeric' | '2-digit';
@@ -10,9 +11,11 @@ interface DateFormatOptions {
 }
 
 export function useToolbar() {
+    // current time
     const [currentTime, setCurrentTime] = useState<string>("");
 
     useEffect(() => {
+        // update current time
         const updateCurrentTime = () => {
             const now: Date = new Date();
             const options: DateFormatOptions = { 
@@ -23,9 +26,13 @@ export function useToolbar() {
             setCurrentTime(formattedTime);
         };
 
+        // execute current time function
         updateCurrentTime();
+
+        // set interval
         const intervalId = setInterval(updateCurrentTime, 1000);
 
+        // clean up interval
         return () => clearInterval(intervalId);
     }, []);
 

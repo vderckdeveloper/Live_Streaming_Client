@@ -1,6 +1,7 @@
 import { useSetting } from './useSetting';
 import styles from '@/component/stream/setting/setting.module.css';
 
+// setting props interface
 interface SettingProps {
     isCurrentScreenOff: boolean;
     isScreenRecordingOff: boolean;
@@ -15,6 +16,7 @@ interface SettingProps {
     onSidebarMenuClose: () => void;
 }
 
+// setting
 function Setting({
     isCurrentScreenOff,
     isScreenRecordingOff,
@@ -37,7 +39,8 @@ function Setting({
         onDisconnect,
     } = useSetting();
 
-    if (!browserWidth) return null;
+    // return if browser width is undefined
+    if (!browserWidth) return;
 
     return (
         <section className={styles['container']}>

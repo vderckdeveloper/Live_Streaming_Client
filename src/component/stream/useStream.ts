@@ -565,6 +565,7 @@ export function useStream() {
         return pc;
     }, [availableVideoRefs]);
 
+    // on side bar menu open
     const onSidebarMenuOpen = () => {
         // browser width
         const browserWidth = window.innerWidth;
@@ -583,6 +584,7 @@ export function useStream() {
         setIsSidebarOpen(true);
     }
 
+    // on side bar menu close
     const onSidebarMenuClose = () => {
         // browser width
         const browserWidth = window.innerWidth;
