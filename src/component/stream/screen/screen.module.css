@@ -136,6 +136,33 @@
     color: #ffffff;
 }
 
+.video-enlarge-btn {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    border: none;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.3);
+    transition: 0.4s ease-in-out;
+    cursor: pointer;
+}
+
+.video-enlarge-btn:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.video-enlarge-btn > svg {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+}
+
 /* my only screen */
 .my-only-screen-wrapper {
     position: relative;
@@ -162,6 +189,54 @@
 .my-only-screen > .video-box > video {
     height: 100%;
 }
+
+/* enlarged screen */
+.enlarged-screen {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 10px 10px 90px 10px;
+    width: 100%;
+    height: 100%;
+}
+
+.enlarged-screen > .video-box > video {
+    height: 100%;
+}
+
+.enlarged-screen > .video-text {
+    top: 10px;
+    left: 10px;   
+}
+
+.video-minimize-btn {
+    position: absolute;
+    right: 20px;
+    bottom: 100px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    border: none;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.3);
+    transition: 0.4s ease-in-out;
+    cursor: pointer;
+}
+
+.video-minimize-btn:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.video-minimize-btn > svg {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+}
+
 
 @media all and (max-width: 1440px) {
     .wrapper {
@@ -221,6 +296,16 @@
     .video-box > video {
         height: 100%;
     }
+
+    .enlarged-screen {
+        padding: 0;
+    }
+
+    .enlarged-screen > .video-text {
+        top: 0;
+        left: 0; 
+        border-radius: 0px 6px 6px 6px;  
+    }
 }
 
 @media all and (max-width: 640px) {
@@ -238,6 +323,16 @@
 @media all and (max-width: 480px) {
     .screen, .my-only-screen {
         min-height: 300px;
+    }
+
+    .enlarged-screen {
+        padding: 0;
+    }
+
+    .enlarged-screen > .video-text {
+        top: 0;
+        left: 0;   
+        border-radius: 0px 6px 6px 6px;  
     }
 }
   
