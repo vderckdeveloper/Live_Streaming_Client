@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 // refs interface
 interface Refs {
@@ -24,6 +24,39 @@ export function useScreen({ setIsOnlyMyVideoAvailable, refs }: UseScreenProps) {
     const [isFirstPeerVideoReady, setIsFirstPeerVideoReady] = useState<boolean>(false);
     const [isSecondPeerVideoReady, setIsSecondPeerVideoReady] = useState<boolean>(false);
     const [isThirdPeerVideoReady, setIsThirdPeerVideoReady] = useState<boolean>(false);
+
+    // enlarged screen
+    const [enlargedScreen, setEnlargedScreen] = useState<boolean>(false);
+
+    // enlarged text
+    const [enlargedText, setEnlargedText] = useState<string>('');
+
+    // enlarged stream
+    const [enlargedStream, setEnlargedStream] = useState<MediaStream | null>(null);
+
+    // on open enlarged screen
+    const onOpenEnlargedScreen = () => {
+        setEnlargedScreen(true);
+    }
+
+    // on close enlarged screen
+    const onCloseEnlargedScreen = () => {
+        setEnlargedScreen(false);
+    }
+
+    // on set enlarged text
+    const onSetEnlargedText = (assignedId: string) => {
+        setEnlargedText(assignedId);
+    }
+
+    // on set enlarged screen ref
+    const onSetEnlargedScreenRef = (ref: React.RefObject<HTMLVideoElement>) => {
+        if (ref.current && ref.current.srcObject) {
+            const originalStream = ref.current.srcObject as MediaStream;
+            const clonedStream = originalStream.clone();
+            setEnlargedStream(clonedStream);
+        }
+    }
 
     // update peer video ready
     useEffect(() => {
@@ -110,5 +143,12 @@ export function useScreen({ setIsOnlyMyVideoAvailable, refs }: UseScreenProps) {
         isFirstPeerVideoReady,
         isSecondPeerVideoReady,
         isThirdPeerVideoReady,
+        enlargedScreen,
+        enlargedText,
+        enlargedStream,
+        onOpenEnlargedScreen,
+        onCloseEnlargedScreen,
+        onSetEnlargedText,
+        onSetEnlargedScreenRef,
     };
 }
