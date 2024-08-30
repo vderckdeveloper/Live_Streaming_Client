@@ -4,7 +4,7 @@ FROM node:20.11.0-alpine
 # Step 2: Set the working directory in the container
 WORKDIR /app
 
-# Step 3: Copy the package.json and package-lock.json (if available)
+# Step 3: Copy the package.json and package-lock.json
 COPY package.json package-lock.json ./
 
 # Step 4: Copy .env file
