@@ -517,6 +517,8 @@ export function useStream() {
 
     // create peer connection
     const createPeerConnectionForOfferMember = useCallback((offerId: string, answerId: string, assignedId: string): RTCPeerConnection => {
+        console.log('one line test');
+        console.log('two line test');
         // ice server
         const ICE_SERVERS = [
             {
