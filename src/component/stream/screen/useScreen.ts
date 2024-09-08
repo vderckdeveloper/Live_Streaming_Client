@@ -54,6 +54,10 @@ export function useScreen({ setIsOnlyMyVideoAvailable, refs }: UseScreenProps) {
         if (ref.current && ref.current.srcObject) {
             const originalStream = ref.current.srcObject as MediaStream;
             const clonedStream = originalStream.clone();
+
+            // Mute the cloned stream audio by disabling audio tracks
+            clonedStream.getAudioTracks().forEach((track) => track.enabled = false);
+
             setEnlargedStream(clonedStream);
         }
     }
