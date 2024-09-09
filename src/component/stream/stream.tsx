@@ -26,8 +26,6 @@ function Stream() {
         onSidebarMenuClose
     } = useStream();
 
-    console.log('jenkins pipe');
-
     return (
         <>
             {/* frame */}
