@@ -50,10 +50,17 @@ export function useScreen({ setIsOnlyMyVideoAvailable, refs }: UseScreenProps) {
     }
 
     // on set enlarged screen ref
-    const onSetEnlargedScreenRef = (ref: React.RefObject<HTMLVideoElement>) => {
+    const onSetEnlargedScreenRef = (ref: React.RefObject<HTMLVideoElement>, isThisMyVideoRef: boolean) => {
         if (ref.current && ref.current.srcObject) {
             const originalStream = ref.current.srcObject as MediaStream;
             const clonedStream = originalStream.clone();
+
+            // Mute local playback
+            if (isThisMyVideoRef === true) {
+                // Mute the cloned stream audio by disabling audio tracks
+                clonedStream.getAudioTracks().forEach((track) => track.enabled = false);
+            }
+
             setEnlargedStream(clonedStream);
         }
     }
