@@ -49,7 +49,7 @@ const Screen = ({ isMyWebcamLoading, isOnlyMyVideoAvailable, setIsOnlyMyVideoAva
                     <button className={styles['video-enlarge-btn']} onClick={() => {
                         onOpenEnlargedScreen();
                         onSetEnlargedText(myAssignedId);
-                        onSetEnlargedScreenRef(videoRef);
+                        onSetEnlargedScreenRef(videoRef, true);
                     }}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 48 48" fill="none">
                             <rect width="40" height="40" fill="white" fillOpacity="0.01" />
@@ -73,7 +73,7 @@ const Screen = ({ isMyWebcamLoading, isOnlyMyVideoAvailable, setIsOnlyMyVideoAva
                     <button className={styles['video-enlarge-btn']} onClick={() => {
                         onOpenEnlargedScreen();
                         onSetEnlargedText(firstPeerVideoRef.userId);
-                        onSetEnlargedScreenRef(firstPeerVideoRef);
+                        onSetEnlargedScreenRef(firstPeerVideoRef, false);
                     }}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 48 48" fill="none">
                             <rect width="40" height="40" fill="white" fillOpacity="0.01" />
@@ -97,7 +97,7 @@ const Screen = ({ isMyWebcamLoading, isOnlyMyVideoAvailable, setIsOnlyMyVideoAva
                     <button className={styles['video-enlarge-btn']} onClick={() => {
                         onOpenEnlargedScreen();
                         onSetEnlargedText(secondPeerVideoRef.userId);
-                        onSetEnlargedScreenRef(secondPeerVideoRef);
+                        onSetEnlargedScreenRef(secondPeerVideoRef, false);
                     }}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 48 48" fill="none">
                             <rect width="40" height="40" fill="white" fillOpacity="0.01" />
@@ -121,7 +121,7 @@ const Screen = ({ isMyWebcamLoading, isOnlyMyVideoAvailable, setIsOnlyMyVideoAva
                     <button className={styles['video-enlarge-btn']} onClick={() => {
                         onOpenEnlargedScreen();
                         onSetEnlargedText(thirdPeerVideoRef.userId);
-                        onSetEnlargedScreenRef(thirdPeerVideoRef);
+                        onSetEnlargedScreenRef(thirdPeerVideoRef, false);
                     }}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 48 48" fill="none">
                             <rect width="40" height="40" fill="white" fillOpacity="0.01" />
