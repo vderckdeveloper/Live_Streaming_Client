@@ -26,6 +26,8 @@ function Stream() {
         onSidebarMenuClose
     } = useStream();
 
+    console.log('jenkins pipe line test');
+
     return (
         <>
             {/* frame */}
